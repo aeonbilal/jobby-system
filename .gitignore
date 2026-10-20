@@ -1,0 +1,22 @@
+# PII never enters this repo: candidates/ is its own private repo, cloned into ./candidates
+candidates/
+
+# scratch, scrape caches, agent worktrees
+tmp/
+.firecrawl/
+.claude/worktrees/
+
+# OS / Python
+.DS_Store
+__pycache__/
+*.pyc
+
+# secrets and machine-local config (API keys: Firecrawl, Apollo, Apify, Prospeo; Gmail app passwords)
+.env
+.env.*
+!.env.example
+secrets/
+*.local.*
+*.pem
+*.key
+credentials*.json

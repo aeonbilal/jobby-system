@@ -1,0 +1,4 @@
+pypdf
+pyspellchecker
+python-docx
+pymupdf  # optional: hidden-text check
