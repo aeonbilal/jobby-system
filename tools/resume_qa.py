@@ -200,9 +200,14 @@ def check(pdf, title, candidate=None, max_pages=1, allow_pr=False, name=None, po
     hr = sum(1 for w in tw if w.rstrip("s") in head.lower()) / len(tw) if tw else 0
     R["headline"] = (hr >= 0.8, f"{hr:.0%} of title words in headline: {head[:90]!r}")
     # profile
-    m = re.search(r"(?ms)^(?:PROFILE|SUMMARY)\s*$(.*?)^(?:CORE SKILLS|SKILLS|EXPERIENCE)\b", text)
-    pw = len(m.group(1).split()) if m else -1
-    R["profile"] = (0 <= pw <= 45, f"{pw} words")
+    m = re.search(r"(?ms)^(?:PROFILE|SUMMARY|(?:HIGHLIGHTS|SUMMARY) OF QUALIFICATIONS)\s*$(.*?)^(?:CORE SKILLS|SKILLS|TECHNICAL SKILLS|EXPERIENCE|PROFESSIONAL EXPERIENCE|EDUCATION)\b", text)
+    body = m.group(1) if m else ""
+    pw = len(body.split()) if m else -1
+    nb = len(re.findall(r"(?m)^\s*[•\-–✓▪]\s+", body))
+    if nb:  # bullet-style summary: 3-5 bullets, <= 75 words
+        R["profile"] = (3 <= nb <= 5 and pw <= 75, f"bullet summary: {nb} bullets, {pw} words")
+    else:   # prose profile
+        R["profile"] = (0 <= pw <= 45, f"prose profile: {pw} words")
     fp = re.findall(r"\b(I|my|me|I'm|I've|mine)\b", text)
     R["no_first_person"] = (not fp, f"{len(fp)} first-person tokens")
     # bullets
