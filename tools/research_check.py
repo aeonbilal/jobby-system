@@ -30,6 +30,37 @@ def host(u):
     return ".".join(h.split(".")[-2:])
 
 
+# Finding areas whose content is written by the employer even when hosted elsewhere (job boards, ATS pages).
+EMPLOYER_AREAS = {"posting-history", "sibling-openings", "company-language"}
+SRC_TAG = re.compile(r"\[source:\s*(employer|third-party)\]", re.I)
+
+
+def full_host(u):
+    h = urlparse(u).netloc.lower().split(":")[0]
+    return h[4:] if h.startswith("www.") else h
+
+
+def employer_domains(raw):
+    m = re.search(r"\*\*Employer domains?:\*\*\s*(.+)", raw)
+    if not m:
+        return []
+    return [d.strip().lower().removeprefix("www.") for d in re.split(r"[,\s]+", m.group(1)) if "." in d]
+
+
+def source_type(finding, domains):
+    """employer or third-party. Explicit [source: ...] tag wins, except a third-party tag on an
+    employer-owned host or employer-authored area, which stays employer (fail-safe)."""
+    area = re.match(r"\s*-\s*\[([a-z-]+)", finding)
+    hosts = [full_host(u) for u in URL.findall(finding)]
+    on_employer = any(h == d or h.endswith("." + d) for h in hosts for d in domains)
+    if on_employer or (area and area.group(1) in EMPLOYER_AREAS):
+        return "employer"
+    tag = SRC_TAG.search(finding)
+    if tag:
+        return tag.group(1).lower()
+    return "third-party"
+
+
 def sections(text):
     text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
     out, cur = {}, None
@@ -89,8 +120,23 @@ def check(path):
         fails.append("evidence missing for hypothesis")
     if conf and conf.group(1) == "High" and len({host(u) for u in URL.findall("\n".join(findings))}) < 2:
         fails.append("High confidence needs at least two independent sourced findings (two different source sites)")
+    if conf and conf.group(1) == "High":
+        domains = employer_domains(raw)
+        if not domains:
+            fails.append("High confidence needs '**Employer domains:**' filled in (the employer's own sites; subdomains count as employer)")
+        elif not any(source_type(f, domains) == "third-party" for f in findings if URL.search(f)):
+            fails.append("High confidence needs at least one finding from a source NOT run by the employer (news, government record, regulator, third party) (§14.2)")
+    if re.search(r"\[hiring-manager\]", "\n".join(findings)) and re.search(r"\b(family|spouse|wife|husband|children|kids|home address|religion|age \d|birthday|instagram|facebook|tiktok)\b", "\n".join(l for l in findings if "[hiring-manager]" in l), re.I):
+        fails.append("hiring-manager finding includes non-professional personal detail (§14.3 privacy)")
+    if re.search(r"\[hiring-manager\]", "\n".join(findings)) and re.search(r"\*\*Application status:\*\*\s*closed", raw, re.I):
+        fails.append("application is closed but hiring-manager findings remain; redact them (§14.3, track close-out)")
     if not re.search(r"\*\*Result:\*\*\s*(PASS|BELOW-FLOOR|UNKNOWN)", "\n".join(sec.get("Pay check", []))):
         fails.append("Pay check Result must be PASS, BELOW-FLOOR or UNKNOWN")
+    pay = "\n".join(sec.get("Pay check", []))
+    if not re.search(r"\*\*Pay law:\*\*\s*\S", pay):
+        warns.append("Pay law line missing: name the pay-transparency law where the job is located, or 'none found' (§14.4)")
+    if re.search(r"\*\*Pay law:\*\*\s*(none|not applicable|n/a|does not apply)", pay, re.I) and re.search(r"(no|missing) (pay|salary|wage) range", "\n".join(sec.get("Red flags", [])), re.I):
+        fails.append("missing-range red flag raised although the Pay law line says no law applies (§14.4)")
     if not [l for l in sec.get("Emphasis plan", []) if l.strip().startswith("- ")]:
         warns.append("emphasis plan is empty")
     use = "\n".join(sec.get("Use in documents", []))

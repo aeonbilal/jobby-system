@@ -8,12 +8,16 @@ Lint before tailor uses it: python3 tools/research_check.py <this file> -->
 - **Tier:** QUICK <!-- QUICK | DEEP (DEEP only when the candidate really wants the role or the operator flagged it) -->
 - **Researched:** <YYYY-MM-DD> by <agent>
 - **Posting:** <url>
+- **Employer domains:** <employer.com, otherbrand.com> <!-- the employer's own sites; subdomains count as employer. Needed for High confidence. -->
+- **Application status:** open <!-- open | closed. On close, track redacts hiring-manager findings (§14.3). -->
 
 ## Findings
 <!-- One bullet per finding: "- [area] finding. Source: <url> (accessed YYYY-MM-DD)".
 QUICK areas: posting-history, sibling-openings, company-language, pay.
 DEEP adds: news, investor, government, people-in-role, hiring-manager, reviews, product, tech-stack, industry, location.
-A finding with no URL is deleted, not kept as a hunch. -->
+A finding with no URL is deleted, not kept as a hunch.
+Optional tag: [source: employer] or [source: third-party]. Employer domains and employer-written areas are always employer.
+hiring-manager: role-relevant professional facts only. reviews: paraphrase, logged-out view only, never copy text. -->
 - [posting-history] <first seen, reposted?, days open, wording changes>. Source: <url> (accessed <YYYY-MM-DD>)
 - [sibling-openings] <other openings, team or location clusters>. Source: <url> (accessed <YYYY-MM-DD>)
 - [company-language] <phrases from careers page, blog, press, mission>. Source: <url> (accessed <YYYY-MM-DD>)
@@ -21,7 +25,7 @@ A finding with no URL is deleted, not kept as a hunch. -->
 ## Why this role exists
 <!-- 1 to 3 sentences. A hypothesis, not a fact. -->
 - **Hypothesis:** <why the company is hiring for this now>
-- **Confidence:** Low <!-- High | Medium | Low. High needs at least two independent sourced findings that point the same way. -->
+- **Confidence:** Low <!-- High | Medium | Low. High needs at least two independent sourced findings that point the same way, at least one from a source NOT run by the employer (news, government, regulator, third party). -->
 - **Evidence:** <finding areas and URLs that support it; anything that cuts against it>
 
 ## Emphasis plan
@@ -37,12 +41,13 @@ Posting keywords still lead zone 1 (§12). Low confidence: plan follows the post
 
 ## Pay check
 - **Posted range:** <range or "not listed">
+- **Pay law:** <law where the job is located and whether it applies to this employer, or "none found"> <!-- §14.4 -->
 - **Benchmark:** <Job Bank wage for NOC/region, url>
-- **Candidate floor:** <from targeting.md>
-- **Result:** PASS <!-- PASS | BELOW-FLOOR | UNKNOWN -->
+- **Candidate floor:** <from targeting.md, in the candidate's currency>
+- **Result:** PASS <!-- PASS | BELOW-FLOOR | UNKNOWN (no range posted and no applicable law, or applicability unknown) -->
 
 ## Red flags
-<!-- e.g. reposted 3+ times, no pay range where Ontario law requires one, review pattern of high turnover, remote claim contradicted. "None found" is a valid entry. -->
+<!-- e.g. reposted 3+ times, no pay range where the local pay-transparency law applies to this employer (§14.4), review pattern of high turnover, remote claim contradicted. "None found" is a valid entry. -->
 - None found
 
 ## Use in documents

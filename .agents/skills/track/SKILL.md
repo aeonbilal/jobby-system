@@ -22,6 +22,7 @@ Any thread needing a response → Gmail draft grounded in dossier facts and the 
 - `applied`, no reply ≥14 days → the digest offers per opportunity: (a) one polite follow-up email draft (default; once, ever), and/or (b) **channel escalation**: apply via the posting's portal (Indeed/Glassdoor/company site — if still live) or a LinkedIn approach for high-value leads. Operator picks; escalations route back through tailor and, once the human submits, land as a `<channel>-escalation` line in `_ledger.md`.
 - Escalation guardrails: max 3 total touches per opportunity, each on a distinct channel; never escalate an opportunity that replied (even a rejection); check the posting is still live before proposing a portal escalation.
 - ≥30 days after the last touch with silence → `closed-stale`.
+- **Close-out (any `closed-*` status):** in `outbox/<slug>/research.md`, delete or redact the `[hiring-manager]` findings and any copied review text, set `Application status: closed`, and re-run `tools/research_check.py` (it fails a closed file that still holds hiring-manager findings). Data minimisation under the privacy law where the candidate and employer are (RESUME-STANDARD §14.3).
 - Posting deadlines and interview dates → surface at the top of the digest.
 
 ## 4. Digest & scoreboard
