@@ -6,7 +6,7 @@ argument-hint: <candidate-name> [opportunity-slug]
 
 # Tailor — research deep, write, judge, seatbelt, hand over
 
-Read `CLAUDE.md` first. Runs on every `approved` opportunity (or just the named one). Never on unapproved ones: approval is what authorizes DEEP research and tailoring (scout's QUICK pass is the only research allowed before approval).
+Read `CLAUDE.md` first (`AGENTS.md` points to it). Runs on every `approved` opportunity (or just the named one). Never on unapproved ones: approval is what authorizes DEEP research and tailoring (scout's QUICK pass is the only research allowed before approval).
 
 ## 1. Deep research (only now, after approval)
 - **Read `outbox/<slug>/research.md` first** (scout's QUICK pass, RESUME-STANDARD §14). If it is missing, run QUICK now. If the role is operator-flagged or a candidate priority, extend it to DEEP, now that it is approved (news, investor material, government grants and contracts, people in the role via web search, hiring manager's role-relevant professional background only, review pain points paraphrased from the logged-out view, products, tech stack, industry context, location and remote status). When DEEP runs, set `Researched tier: deep` and `Deep researched on: <today>` in the pipeline file (on or after `Approved on`). Re-run `python3 tools/research_check.py outbox/<slug>/research.md --pipeline pipeline/<slug>.md` (exit 0) before writing; it also runs `tools/pipeline_check.py`.

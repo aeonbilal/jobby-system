@@ -70,6 +70,7 @@ Rules marked **[S]** are checked by the seatbelt (`resume_qa.py`, which must pas
 ## 6. File format and naming
 - **[S]** Name the file `Firstname-Lastname-Resume-<Company>.pdf`, plus the matching `.docx`, using the candidate's name and the employer as short title-case words joined with hyphens (e.g. `Jane-Doe-Resume-Acme-Dental.pdf`). Internal slugs (`cv-<company>.pdf`) are retired for new packs.
 - Default upload: a text-based PDF with embedded fonts, built from the DOCX. Keep the DOCX and use it for legacy ATS (Taleo, older iCIMS) or when the parse preview is wrong.
+- **6.1 Legacy documents (grandfathering).** CVs and letters produced for opportunities dated before 2026-10-20 (the pipeline file date, or a `**Legacy:** true` line in the pipeline file) are legacy. They stay as they are for record-keeping, exempt from this standard's naming and content checks: never rename or edit them. `tools/resume_qa.py --audit` skips them (`--include-legacy` scores them for information, never gating). A legacy file is never sent as new: any escalation, re-send or follow-up on a legacy opportunity that needs a document re-runs tailor first to produce a conforming file, which must pass `resume_qa.py` (exit 0).
 - **[S]** PDF metadata: Title `Firstname Lastname – Resume`, Author = the candidate's name. File size under 1 MB.
 - **Attach the tailored file, never a generic `<Name>-CV.pdf` copy.** Gmail drafts and portal checklists point to the exact tailored filename.
 

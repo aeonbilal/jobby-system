@@ -11,7 +11,7 @@ tmp/
 __pycache__/
 *.pyc
 
-# secrets and machine-local config (API keys: Firecrawl, Apollo, Apify, Prospeo; Gmail app passwords)
+# secrets and machine-local config (API keys: Firecrawl, Apollo, Apify, Prospeo)
 .env
 .env.*
 !.env.example

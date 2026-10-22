@@ -6,7 +6,7 @@ argument-hint: <candidate-name>
 
 # Scout — sweep, qualify cheap, file, ask
 
-Read `CLAUDE.md` first. Prereq: intake's quality bar is met. Load `dossier.md`, `targeting.md`, `_ledger.md`, and existing `pipeline/` before searching anything.
+Read `CLAUDE.md` first (`AGENTS.md` points to it). Prereq: intake's quality bar is met. Load `dossier.md`, `targeting.md`, `_ledger.md`, and existing `pipeline/` before searching anything.
 
 ## 1. Sweep (multi-channel, freshness-biased)
 Prefer postings within targeting's freshness window (default ≤7 days). Channels in priority order:

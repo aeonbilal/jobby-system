@@ -6,7 +6,7 @@ argument-hint: <candidate-name>
 
 # Track — sync, respond, report
 
-Read `CLAUDE.md` first. Load `pipeline/` and `_ledger.md`.
+Read `CLAUDE.md` first (`AGENTS.md` points to it). Load `pipeline/` and `_ledger.md`.
 
 ## 1. Sync inbox → pipeline
 Search the candidate's Gmail for threads matching in-flight companies (status `applied` and later). Classify each:
@@ -20,6 +20,7 @@ Any thread needing a response → Gmail draft grounded in dossier facts and the 
 
 ## 3. Follow-ups, staleness & channel escalation
 - `applied`, no reply ≥14 days → the digest offers per opportunity: (a) one polite follow-up email draft (default; once, ever), and/or (b) **channel escalation**: apply via the posting's portal (Indeed/Glassdoor/company site — if still live) or a LinkedIn approach for high-value leads. Operator picks; escalations route back through tailor and, once the human submits, land as a `<channel>-escalation` line in `_ledger.md`.
+- **Legacy opportunities** (pipeline file dated before 2026-10-20, or `**Legacy:** true`; RESUME-STANDARD §6.1): if an escalation, re-send or follow-up needs a CV or letter, route it through tailor to produce a new conforming file first. Never attach or upload the legacy file, and never rename or edit it.
 - Escalation guardrails: max 3 total touches per opportunity, each on a distinct channel; never escalate an opportunity that replied (even a rejection); check the posting is still live before proposing a portal escalation.
 - ≥30 days after the last touch with silence → `closed-stale`.
 - **Close-out (any `closed-*` status):** in `outbox/<slug>/research.md`, delete or redact the `[hiring-manager]` findings and any copied review text, set `Application status: closed`, and re-run `tools/research_check.py` (it fails a closed file that still holds hiring-manager findings). Leave `Researched tier`, `Approved on` and `Deep researched on` in the pipeline file as the audit record; run `tools/pipeline_check.py` on it. Data minimisation under the privacy law where the candidate and employer are (RESUME-STANDARD §14.3).

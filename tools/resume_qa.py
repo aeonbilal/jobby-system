@@ -285,14 +285,27 @@ def check(pdf, title, candidate=None, max_pages=1, allow_pr=False, name=None, po
     return dict(file=pdf, score=score, fails=fails, rules={k: dict(ok=ok, detail=d) for k, (ok, d) in R.items()}, info=info)
 
 
-def pipeline_title(cand_dir, slug):
+LEGACY_CUTOFF = "2026-10-20"  # RESUME-STANDARD §6.1: documents produced before this date are legacy
+
+
+def pipeline_info(cand_dir, slug):
+    """(title, status, legacy) for the outbox slug. Legacy = the opportunity's pipeline file is dated before
+    LEGACY_CUTOFF (filename YYYY-MM-DD-<slug>.md) or carries a `**Legacy:** true` line. File mtimes are not used:
+    clones and copies reset them."""
     for f in glob.glob(f"{cand_dir}/pipeline/*.md"):
         t = open(f).read()
         if f"outbox/{slug}/" in t or os.path.basename(f)[11:-3] == slug:
             h = t.splitlines()[0].lstrip("# ")
             st = re.search(r"\*\*Status:\*\*\s*([a-z-]+)", t)
-            return (h.split("—", 1)[1].strip() if "—" in h else h), (st.group(1) if st else "?")
-    return "", "?"
+            d = re.match(r"(\d{4}-\d{2}-\d{2})-", os.path.basename(f))
+            legacy = bool(re.search(r"\*\*Legacy:\*\*\s*true", t, re.I)) or bool(d and d.group(1) < LEGACY_CUTOFF)
+            return (h.split("—", 1)[1].strip() if "—" in h else h), (st.group(1) if st else "?"), legacy
+    return "", "?", False
+
+
+def pipeline_title(cand_dir, slug):
+    t, s, _ = pipeline_info(cand_dir, slug)
+    return t, s
 
 
 def main():
@@ -306,16 +319,23 @@ def main():
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--posting", help="posting text/markdown file: keyword-coverage report (warning only, never fails)")
     ap.add_argument("--audit", help="candidates/<slug>: score every CV in outbox")
+    ap.add_argument("--include-legacy", action="store_true",
+                    help="audit: also score legacy CVs (pre-cutoff opportunities); they are reported, never gating")
     a = ap.parse_args()
     if a.audit:
         rows = []
         pdfs = sorted(p for p in glob.glob(f"{a.audit}/outbox/*/cv-*.pdf") + glob.glob(f"{a.audit}/outbox/*/*-Resume-*.pdf")
                       if not p.split("/outbox/")[1].startswith("_"))
+        legacy_skipped = []
         for p in pdfs:
             slug = p.split("/outbox/")[1].split("/")[0]
-            title, status = pipeline_title(a.audit, slug)
+            title, status, legacy = pipeline_info(a.audit, slug)
+            if legacy and not a.include_legacy:
+                legacy_skipped.append(p); continue
             r = check(p, title or slug.replace("-", " "), os.path.basename(a.audit.rstrip("/")), a.max_pages, a.allow_pr)
-            r.update(slug=slug, status=status, title=title); rows.append(r)
+            r.update(slug=slug, status=status, title=title, legacy=legacy)
+            if legacy: r["fails"] = []  # legacy record: scored for information only
+            rows.append(r)
         if a.json:
             print(json.dumps(rows, indent=1)); return
         print("| CV | status | score | fails | bullet mix |\n|---|---|---|---|---|")
@@ -323,6 +343,9 @@ def main():
             print(f"| {r['slug']}/{os.path.basename(r['file'])} | {r['status']} | {r['score']} | {', '.join(r['fails'])} | {r['info']['bullet_mix']} |")
         s = [r["score"] for r in rows]
         if s: print(f"\n{len(s)} CVs, score {min(s)}-{max(s)}, mean {sum(s)/len(s):.1f}")
+        if legacy_skipped:
+            print(f"{len(legacy_skipped)} legacy CVs skipped (opportunity before {LEGACY_CUTOFF}; exempt for record-keeping, "
+                  "never sent as new: re-run tailor first). Use --include-legacy to score them.")
         return
     if not a.pdf or not a.title:
         ap.error("pdf and --title are required (or use --audit)")

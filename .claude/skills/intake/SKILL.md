@@ -6,7 +6,7 @@ argument-hint: <candidate-name>
 
 # Intake — documents first, interview second
 
-Goal: a dossier so rich that tailor never guesses, and a targeting file so precise that scout never wastes a search. Read `CLAUDE.md` first; hard rules apply.
+Goal: a dossier so rich that tailor never guesses, and a targeting file so precise that scout never wastes a search. Read `CLAUDE.md` first (`AGENTS.md` points to it); hard rules apply.
 
 ## 0. Setup
 - Slug the candidate name (kebab-case). Workspace: `candidates/<slug>/`. If missing, create it: copy `templates/dossier.md` and `templates/targeting.md` in, create `documents/`, `pipeline/`, `outbox/`, and `_ledger.md` (headers: `## Seen` and `## Applied`, one line per entry).
