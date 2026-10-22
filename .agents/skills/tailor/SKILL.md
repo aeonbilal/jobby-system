@@ -9,6 +9,7 @@ argument-hint: <candidate-name> [opportunity-slug]
 Read `AGENTS.md` first. Runs on every `approved` opportunity (or just the named one). Never on unapproved ones — approval is what authorizes the research spend.
 
 ## 1. Deep research (only now, after approval)
+- **Read `outbox/<slug>/research.md` first** (scout's QUICK pass, RESUME-STANDARD §14). If it is missing, run QUICK now. If the role is operator-flagged or a candidate priority, extend it to DEEP (news, investor material, government grants and contracts, people in the role via web search, hiring manager's public professional background, review pain points, products, tech stack, industry context, location and remote status). Re-run `tools/research_check.py` (exit 0) before writing.
 - Scrape the full posting; extract explicit requirements and the between-the-lines priorities.
 - Company: product, stage/size, recent news, careers-page tone, culture signals → match against the dossier's work-style profile for a grounded culture-fit angle (not flattery — an actual overlap).
 - Confirm the apply channel. Portal → note ATS type. Outreach enabled → confirm the hiring-manager contact via Apollo.
@@ -27,11 +28,18 @@ Read `AGENTS.md` first. Runs on every `approved` opportunity (or just the named 
   - The profile carries 1–2 Q/R accomplishments.
   - Add a Projects section only under the §13.7 criteria.
   - Blacklisted phrases (§13.5) never appear.
+- **Research use (mandatory, RESUME-STANDARD §14.3).**
+  - The emphasis plan decides ordering among TRUE dossier items only. It never adds a claim, skill or number.
+  - Posting keywords still lead zone 1; company vocabulary comes second and only where true.
+  - Cover letter: one tentative sentence linking the candidate to the hypothesis, ONLY if confidence is High and sourced. Never assert internal facts. Record the sentence under "Use in documents" in research.md.
+  - Low confidence: the hypothesis is not used in any document. Medium: emphasis only, never the letter.
 - **NEVER use em-dashes** in any candidate-facing text (CVs, letters, emails, LinkedIn, answers packs). Operator rule, 2026-07-09: they read as AI-generated. Restructure with commas, colons, parentheses, or shorter sentences. En-dashes in date ranges are fine.
 - **FABRICATION IS THE CAPITAL OFFENSE.** Every claim traces to dossier evidence. Reframing yes; inventing skills, titles, dates, or numbers — never. An invented skill discovered in an interview burns the candidate, not the system.
 
 ## 3. Judge (taste and grounding — a fresh critical pass, not the writer's)
 Re-read everything against dossier + JD: grounding (each claim → evidence), relevance (would a tired recruiter see the fit in 10 seconds?), tone (human, not AI-slop), honesty of tense and seniority claims. Fail → rewrite once. Fail twice → flag for the operator and move to the next opportunity.
+
+**NON-SKIPPABLE, and never the writer's own context.** Run the judge as a separate subagent per batch using `references/judge-rubric.md` (in this skill's directory): durations attach only to dossier-evidenced work, never to tools (learned 2026-07-13: "four years on ABELdent"); certification/enrollment claims capped at dossier facts ("plans to complete", never "in progress" unless dossier says enrolled); formal register, never needy. A batch is not `ready` until the judge verdict is recorded. Skipping the judge is what let three operator-visible defects ship in batches #2-3.
 
 ## 4. Deterministic seatbelt (form and state only — never taste)
 - Correct company/role names everywhere — explicit cross-contamination check against other in-flight opportunities (the classic mail-merge fail).

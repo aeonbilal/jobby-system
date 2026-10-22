@@ -18,6 +18,7 @@ Work that doesn't move one of these doesn't get built.
 
 - **intake** — documents first, interview second → `dossier.md` + `targeting.md`.
 - **scout** — sweep channels → dedup → **cheap qualify** (metadata-only fit score) → file opportunities ≥ threshold → operator approval digest. Cheap qualify is the cost gate BETWEEN sourcing and deep research: nothing below threshold or unapproved gets researched or tailored.
+- **scout** also writes a QUICK `research.md` (hiring hypothesis, RESUME-STANDARD §14) for each filed opportunity.
 - **tailor** — deep research → writer → judge → deterministic seatbelt → drafts and packs in `outbox/`, Gmail drafts in the candidate's account. Never sends.
   Every CV must follow **`templates/RESUME-STANDARD.md` (mandatory)** and pass `tools/resume_qa.py` (exit 0) before `ready`. Filename: `Firstname-Lastname-Resume-<Company>.pdf`.
 - **track** — sync replies → update pipeline → draft responses → scoreboard digest.
@@ -57,10 +58,10 @@ candidates/<slug>/          # gitignored — one per person
   targeting.md              # lanes, threshold, constraints, exclusions, channels
   documents/                # originals + <file>.extracted.md
   pipeline/                 # one file per opportunity (statuses: discovered → approved → ready → applied → replied → interviewing → offer | closed-*)
-  outbox/<slug>/            # CVs, letters, answers.md packs
+  outbox/<slug>/            # CVs, letters, answers.md packs, research.md (§14)
   _ledger.md                # canonical seen + applied ledger (dedup source of truth)
-templates/                  # dossier, targeting, opportunity blanks, RESUME-STANDARD.md
-tools/                      # resume_qa.py (seatbelt), build_cv_from_template.py (house-style build)
+templates/                  # dossier, targeting, opportunity, research blanks, RESUME-STANDARD.md
+tools/                      # resume_qa.py (seatbelt), build_cv_from_template.py (house-style build), research_check.py (research.md lint)
 research/                   # evidence behind RESUME-STANDARD (no PII)
 ```
 

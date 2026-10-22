@@ -195,3 +195,23 @@ Sources cited on the slides: status.net, themuse.com, indeed.com accomplishment-
 - WARN, qualitative: "Forged strong relationships with key industry influencers, boosting the company's reputation and authority." Name the evidence (who, how many, what it led to) or it reads as filler.
 - WARN, weak: "Stayed up-to-date on software and hardware updates to optimize efficiency and productivity for management." The result is vague, so ask the candidate what actually improved.
 - DUTY (D): "Maintained, coordinated and updated the client database, records and email lists." Counts toward the duty cap. Upgrade with scale (how many records) or a result (fewer bounces, faster lookups).
+
+## 14. Company and role research (system rule, 2026-10-22)
+Before tailoring, the agent works out why the role exists (the "hiring hypothesis") and uses it to decide which TRUE dossier items lead. Output: `outbox/<slug>/research.md` from `templates/research.md`, linted by `tools/research_check.py`.
+
+### 14.1 Tiers
+- **QUICK (every filed opportunity):** posting history (repost, age, wording changes); sibling openings at the company (team and location clusters); the company's own language (careers page, blog, press, mission); pay check against the candidate's floor (Ontario pay-transparency range, Job Bank wage data).
+- **DEEP (roles the candidate really wants, or operator-flagged):** QUICK plus recent news, funding, launches and exec hires; earnings calls, investor decks and annual reports (public companies); government grants and contracts; people currently in the role (public profiles found through web search only); the hiring manager's public professional background; Glassdoor and Indeed review pain points; products, changelogs, app reviews and case studies; tech stack signals; industry and regulatory context; location, commute and real remote status.
+
+### 14.2 Output
+Every finding has a source URL and the date accessed. The file has: Findings, Why this role exists (1 to 3 sentences, confidence High, Medium or Low, and the evidence), Emphasis plan, Company vocabulary, Pay check, Red flags, Use in documents. High confidence needs at least two independent sourced findings pointing the same way.
+
+### 14.3 Guardrails
+- **Public sources only.** No scraping behind logins (CLAUDE.md hard rule 8), no LinkedIn scraping (people-in-role and hiring-manager lookups go through a search engine), and no contacting employees.
+- **Emphasis, never claims.** Research changes ordering and emphasis only. It never adds a skill, duty or number to the candidate (§12, §13, never fabricate). A gap the research reveals goes under `## Gaps`, not onto the CV.
+- **Posting keywords still lead.** In the resume, zone 1 mirrors the posting first (§12); company vocabulary is secondary and used only where true.
+- **Cover letter:** at most one sentence may reference the hypothesis, and ONLY when confidence is High and sourced. Phrase it tentatively ("teams opening a second location often need..."), never assert internal facts ("I see you are restructuring your billing team").
+- **Low confidence = not used** in any document. Medium confidence may shape the emphasis plan, never the letter.
+- **Hiring manager privacy:** professional public information only (role, tenure, public talks or posts). No personal life, family, address, photos or social accounts.
+- **[S]** `tools/research_check.py` checks form: required sections, a URL and access date on every finding, a confidence value, a 1 to 3 sentence hypothesis, and no letter sentence unless confidence is High.
+- **[J]** The judge checks use (rubric R1 to R5).

@@ -35,6 +35,13 @@ A5. Profile: contains 1–2 Q/R accomplishments, not adjectives.
 A6. Blacklist (§13.5): any FAIL-list phrase is a FIX. WARN-list phrases need a result or HOW in the same bullet.
 A7. Projects: present only if the §13.7 criteria hold; never padding.
 
+RESEARCH USE (CVs and letters, RESUME-STANDARD §14; read outbox/<slug>/research.md):
+R1. No claim enters the CV or letter from research. Every candidate claim still traces to the dossier; a claim supported only by research.md is a G-level failure.
+R2. Posting first: zone 1 leads with the posting's terms. Company vocabulary that displaces a posting must-have is a FIX.
+R3. Letter hypothesis: at most one sentence, only if research.md confidence is High with sourced evidence, phrased tentatively. Asserting internal facts ("I see you are restructuring...") or using a Medium/Low hypothesis is a FIX.
+R4. Emphasis plan followed: the items research.md says to lead with lead, or the deviation is explained in tailoring notes.
+R5. Privacy and sourcing: no hiring-manager detail beyond professional public info; nothing that could only come from a login-walled page or from contacting an employee.
+
 For each letter output:
 FILE | VERDICT: PASS or FIX | findings as "RULE: exact quote -> why -> suggested rewrite" (one per finding)
 Be strict on G-rules, proportionate on T-rules (do not flatten personality where register fits the audience, e.g. fitness studios).

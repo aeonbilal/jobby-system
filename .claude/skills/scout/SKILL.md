@@ -26,8 +26,16 @@ Score 0–100 from posting metadata alone (title, company, location, comp, senio
 - Below threshold → same ledger line with the score.
 - At/above threshold → create `pipeline/YYYY-MM-DD-<slug>.md` from `templates/opportunity.md`, status `discovered`, with: score, why-this-fits (≤3 bullets), risks/unknowns, apply-channel analysis, deadline.
 
+## 3b. QUICK company and role research (filed opportunities only, RESUME-STANDARD §14)
+Runs only on opportunities that cleared cheap qualify and got a pipeline file, so the cost gate stays intact. Create `outbox/<opportunity-slug>/research.md` from `templates/research.md`, tier QUICK:
+- **Posting history:** first seen, reposts, days open, wording changes (compare cached or earlier copies where public).
+- **Sibling openings:** the company's other live postings; note team or location clusters.
+- **Company language:** careers page, blog, press releases, mission page; capture their recurring terms.
+- **Pay check:** posted range (Ontario requires one from 2026) and the Job Bank wage for the NOC and region against the targeting.md floor. BELOW-FLOOR is a hard-constraint signal: note it in the digest row.
+Write the hypothesis, confidence, emphasis plan, vocabulary and red flags, then run `python3 tools/research_check.py <file>` (must exit 0). Run DEEP instead when targeting.md marks the role or company as a priority or the operator flags it. Guardrails (§14.3): public sources only, no login-walled scraping, no LinkedIn scraping, no contacting employees, hiring-manager info professional and public only.
+
 ## 4. Digest & approval
-End with one table: `score | company | role | location | channel | one-line why`, sorted by score. Ask the operator to approve/reject each row — approve → status `approved`; reject → `closed-rejected` with the reason logged in the pipeline file (rejection reasons tune future scoring; note recurring ones in OPS-LOG).
+End with one table: `score | company | role | location | channel | pay check | one-line why`, sorted by score. Ask the operator to approve/reject each row — approve → status `approved`; reject → `closed-rejected` with the reason logged in the pipeline file (rejection reasons tune future scoring; note recurring ones in OPS-LOG).
 
 **No artificial volume cap.** Everything at/above threshold gets filed. If digests regularly exceed ~25 rows, the fix is raising the threshold or tightening targeting in a build session — never silently dropping rows.
 
