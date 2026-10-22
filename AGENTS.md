@@ -60,7 +60,7 @@ candidates/<slug>/          # gitignored — one per person
   outbox/<slug>/            # CVs, letters, answers.md packs, research.md (§14)
   _ledger.md                # canonical seen + applied ledger (dedup source of truth)
 templates/                  # dossier, targeting, opportunity, research blanks, RESUME-STANDARD.md
-tools/                      # resume_qa.py (seatbelt), build_cv_from_template.py (house-style build), research_check.py (research.md lint)
+tools/                      # resume_qa.py (seatbelt), build_cv_from_template.py (house-style build), research_check.py (research.md lint), pipeline_check.py (research tier and approval dates)
 research/                   # evidence behind RESUME-STANDARD (no PII)
 ```
 

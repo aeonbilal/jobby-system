@@ -6,6 +6,9 @@
 - **Location:** <city / remote>
 - **Comp:** <listed or "not listed">
 - **Fit score:** <n>/100
+- **Approved on:** n/a <!-- YYYY-MM-DD when the operator approved; n/a until then -->
+- **Researched tier:** none <!-- none | quick | deep. Matches the Tier in outbox/<slug>/research.md. -->
+- **Deep researched on:** n/a <!-- YYYY-MM-DD when DEEP ran; must be on or after Approved on (RESUME-STANDARD §14.1). Check: python3 tools/pipeline_check.py <this file> -->
 
 ## Why this fits
 <!-- Max 3 bullets, grounded in dossier + targeting. -->

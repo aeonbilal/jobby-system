@@ -40,7 +40,8 @@ R1. No claim enters the CV or letter from research. Every candidate claim still 
 R2. Posting first: zone 1 leads with the posting's terms. Company vocabulary that displaces a posting must-have is a FIX.
 R3. Letter hypothesis: at most one sentence, only if research.md confidence is High with sourced evidence including at least one source not run by the employer, phrased tentatively. Asserting internal facts ("I see you are restructuring...") or using a Medium/Low hypothesis is a FIX.
 R4. Emphasis plan followed: the items research.md says to lead with lead, or the deviation is explained in tailoring notes.
-R5. Privacy and sourcing: no hiring-manager detail beyond role-relevant professional facts; no copied review text (paraphrase only); nothing that could only come from a login-walled page or from contacting an employee.
+R5. Privacy and sourcing: no hiring-manager detail beyond role-relevant professional facts; no copied review text (paraphrase only); nothing that could only come from a login-walled page or from contacting an employee; no LinkedIn URL as the source of a hiring-manager or people-in-role finding (a FIX; the checker also fails it).
+R6. Pay and tier records: a missing-range red flag appears only when `Pay law applies: yes` with a cited law; a DEEP note matches a pipeline file showing `Deep researched on` on or after `Approved on`. Otherwise a FIX.
 
 For each letter output:
 FILE | VERDICT: PASS or FIX | findings as "RULE: exact quote -> why -> suggested rewrite" (one per finding)

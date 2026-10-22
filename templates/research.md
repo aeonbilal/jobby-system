@@ -5,7 +5,7 @@ Public sources only. Every finding carries a source URL and the date accessed (Y
 Research changes emphasis and ordering only; it never adds a claim about the candidate.
 Lint before tailor uses it: python3 tools/research_check.py <this file> -->
 
-- **Tier:** QUICK <!-- QUICK | DEEP (DEEP only when the candidate really wants the role or the operator flagged it) -->
+- **Tier:** QUICK <!-- QUICK | DEEP (DEEP only after operator approval, when the candidate really wants the role or the operator flagged it; record it in the pipeline file: Researched tier, Deep researched on) -->
 - **Researched:** <YYYY-MM-DD> by <agent>
 - **Posting:** <url>
 - **Employer domains:** <employer.com, otherbrand.com> <!-- the employer's own sites; subdomains count as employer. Needed for High confidence. -->
@@ -41,7 +41,8 @@ Posting keywords still lead zone 1 (§12). Low confidence: plan follows the post
 
 ## Pay check
 - **Posted range:** <range or "not listed">
-- **Pay law:** <law where the job is located and whether it applies to this employer, or "none found"> <!-- §14.4 -->
+- **Pay law:** <cited law where the job is located, e.g. "Ontario ESA s. 8.2", or "none found"> <!-- §14.4 -->
+- **Pay law applies:** unknown <!-- yes | no | unknown. yes only when the law covers this employer and posting (size threshold, public posting, in-scope location). A missing-range red flag is allowed only when yes. -->
 - **Benchmark:** <Job Bank wage for NOC/region, url>
 - **Candidate floor:** <from targeting.md, in the candidate's currency>
 - **Result:** PASS <!-- PASS | BELOW-FLOOR | UNKNOWN (no range posted and no applicable law, or applicability unknown) -->

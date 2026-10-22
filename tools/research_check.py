@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Lint a research.md file (RESUME-STANDARD §14). Form checks only; the judge checks use.
 
-Usage: python3 tools/research_check.py <research.md> [--json]
+Usage: python3 tools/research_check.py <research.md> [--json] [--legacy] [--pipeline <pipeline file>]
+  --legacy    notes written before 2026-10-22 without a 'Pay law applies' line: WARN instead of FAIL.
+  --pipeline  also cross-check Tier against the pipeline file (tools/pipeline_check.py rules).
 Exit 0 = PASS (warnings allowed), 1 = FAIL, 2 = usage error.
 """
 import datetime, json, re, sys
@@ -82,7 +84,7 @@ def sections(text):
     return text, out
 
 
-def check(path):
+def check(path, legacy=False):
     fails, warns = [], []
     raw, sec = sections(open(path, encoding="utf-8").read())
     for name in REQUIRED:
@@ -110,7 +112,9 @@ def check(path):
                     fails.append("access date in the future: " + f.strip()[:80])
             except ValueError:
                 fails.append("invalid access date: " + f.strip()[:80])
-        if re.search(r"linkedin\.com/", f, re.I):
+        if re.search(r"linkedin\.com/", f, re.I) and re.match(r"\s*-\s*\[(hiring-manager|people-in-role)\]", f, re.I):
+            fails.append("LinkedIn URL cited as a source for a person (hiring-manager or people-in-role); use a search-engine result or the person's non-LinkedIn public page (§14.3): " + f.strip()[:60])
+        elif re.search(r"linkedin\.com/", f, re.I):
             warns.append("LinkedIn URL cited as a source; people lookups go through a search engine, never LinkedIn scraping (§14.3): " + f.strip()[:60])
     why = "\n".join(sec.get("Why this role exists", []))
     conf = re.search(r"\*\*Confidence:\*\*\s*(High|Medium|Low)\b", why)
@@ -142,13 +146,24 @@ def check(path):
     if not re.search(r"\*\*Result:\*\*\s*(PASS|BELOW-FLOOR|UNKNOWN)", "\n".join(sec.get("Pay check", []))):
         fails.append("Pay check Result must be PASS, BELOW-FLOOR or UNKNOWN")
     pay = "\n".join(sec.get("Pay check", []))
-    if not re.search(r"\*\*Pay law:\*\*\s*\S", pay):
-        warns.append("Pay law line missing: name the pay-transparency law where the job is located, or 'none found' (§14.4)")
-    law = re.search(r"\*\*Pay law:\*\*\s*(.+)", pay)
-    no_law = law and re.search(r"^(none|n/a)\b|not applicable|does not apply|doesn't apply|no (applicable )?law|not in force|not yet proclaimed", law.group(1).strip(), re.I)
+    law = re.search(r"\*\*Pay law:\*\*[ \t]*(\S.*)?", pay)
+    applies = re.search(r"\*\*Pay law applies:\*\*[ \t]*(\S+)?", pay)
+    val = applies.group(1).strip(".").lower() if applies and applies.group(1) else None
+    if val not in (None, "yes", "no", "unknown"):
+        fails.append("Pay law applies must be yes, no or unknown (§14.4)")
+    elif val is None:
+        msg = "Pay law applies line missing or empty: set yes, no or unknown (§14.4)"
+        (warns if legacy else fails).append(msg + (" [legacy note]" if legacy else ""))
+    if val == "yes" and (not law or not law.group(1) or re.match(r"(none|n/a)\b", law.group(1).strip(), re.I)):
+        fails.append("Pay law applies is yes but the Pay law line does not cite the law (§14.4)")
+    if not law or not law.group(1):
+        warns.append("Pay law line missing: cite the pay-transparency law where the job is located, or 'none found' (§14.4)")
     flags = [l for l in sec.get("Red flags", []) if re.search(r"(pay|salary|wage|compensation) (range|scale|band)", l, re.I) and re.search(r"\b(no|missing|not (listed|posted|shown|stated)|absent|without|omit)", l, re.I)]
-    if no_law and flags:
-        fails.append("missing-range red flag raised although the Pay law line says no law applies (§14.4)")
+    if flags and val != "yes":
+        fails.append("missing-range red flag raised but Pay law applies is not yes (§14.4: flag only when the law applies to this employer)")
+    posted = re.search(r"\*\*Posted range:\*\*\s*(.+)", pay)
+    if val == "yes" and posted and re.match(r"not (listed|posted)|none\b", posted.group(1).strip(), re.I) and not flags:
+        warns.append("no range posted and Pay law applies is yes, but no red flag raised (§14.4)")
     if not [l for l in sec.get("Emphasis plan", []) if l.strip().startswith("- ")]:
         warns.append("emphasis plan is empty")
     use = "\n".join(sec.get("Use in documents", []))
@@ -160,10 +175,22 @@ def check(path):
 
 
 def main():
-    args = [a for a in sys.argv[1:] if a != "--json"]
+    argv = sys.argv[1:]
+    pipeline = None
+    if "--pipeline" in argv:
+        k = argv.index("--pipeline")
+        if k + 1 >= len(argv):
+            print(__doc__); sys.exit(2)
+        pipeline = argv[k + 1]; del argv[k:k + 2]
+    args = [a for a in argv if a not in ("--json", "--legacy")]
     if len(args) != 1:
         print(__doc__); sys.exit(2)
-    fails, warns = check(args[0])
+    fails, warns = check(args[0], legacy="--legacy" in argv)
+    if pipeline:
+        sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
+        from pipeline_check import check as pcheck
+        pf, pw = pcheck(pipeline, research=args[0])
+        fails += ["pipeline: " + x for x in pf]; warns += ["pipeline: " + x for x in pw]
     if "--json" in sys.argv:
         print(json.dumps({"file": args[0], "pass": not fails, "fails": fails, "warns": warns}, indent=2))
     else:
