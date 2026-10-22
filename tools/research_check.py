@@ -4,12 +4,30 @@
 Usage: python3 tools/research_check.py <research.md> [--json]
 Exit 0 = PASS (warnings allowed), 1 = FAIL, 2 = usage error.
 """
-import json, re, sys
+import datetime, json, re, sys
+from urllib.parse import urlparse
 
-REQUIRED = ["Findings", "Why this role exists", "Emphasis plan", "Company vocabulary", "Pay check", "Red flags"]
+REQUIRED = ["Findings", "Why this role exists", "Emphasis plan", "Company vocabulary", "Pay check", "Red flags", "Use in documents"]
 URL = re.compile(r"https?://\S+")
-DATE = re.compile(r"accessed\s+\d{4}-\d{2}-\d{2}", re.I)
-PLACEHOLDER = re.compile(r"<[^>\n]{2,}>")
+DATE = re.compile(r"accessed\s+(\d{4}-\d{2}-\d{2})", re.I)
+PLACEHOLDER = re.compile(r"<[A-Za-z][^<>\n]{1,}>")
+# Abbreviations that end in a period but do not end a sentence.
+ABBREV = re.compile(r"\b(?:Inc|Ltd|Corp|Co|Mr|Mrs|Ms|Dr|St|Jr|Sr|vs|etc|approx|No|e\.g|i\.e|U\.S|U\.K)\.$", re.I)
+
+
+def count_sentences(t):
+    parts = [x for x in re.split(r"(?<=[.!?])\s+", t.strip()) if x]
+    n = 0
+    for i, x in enumerate(parts):
+        if i == len(parts) - 1 or not ABBREV.search(x):
+            n += 1
+    return n
+
+
+def host(u):
+    h = urlparse(u).netloc.lower().split(":")[0]
+    h = h[4:] if h.startswith("www.") else h
+    return ".".join(h.split(".")[-2:])
 
 
 def sections(text):
@@ -46,6 +64,15 @@ def check(path):
             fails.append("finding without source URL: " + f.strip()[:80])
         elif not DATE.search(f):
             fails.append("finding without 'accessed YYYY-MM-DD': " + f.strip()[:80])
+        else:
+            try:
+                d = datetime.date.fromisoformat(DATE.search(f).group(1))
+                if d > datetime.date.today():
+                    fails.append("access date in the future: " + f.strip()[:80])
+            except ValueError:
+                fails.append("invalid access date: " + f.strip()[:80])
+        if re.search(r"linkedin\.com/", f, re.I):
+            warns.append("LinkedIn URL cited as a source; people lookups go through a search engine, never LinkedIn scraping (§14.3): " + f.strip()[:60])
     why = "\n".join(sec.get("Why this role exists", []))
     conf = re.search(r"\*\*Confidence:\*\*\s*(High|Medium|Low)\b", why)
     if not conf:
@@ -54,25 +81,23 @@ def check(path):
     if not hyp or not hyp.group(1).strip():
         fails.append("hypothesis missing")
     else:
-        n = len([s for s in re.split(r"(?<=[.!?])\s+", hyp.group(1).strip()) if s])
+        n = count_sentences(hyp.group(1))
         if n > 3:
             fails.append(f"hypothesis is {n} sentences (max 3)")
     ev = re.search(r"\*\*Evidence:\*\*\s*(.+)", why)
     if not ev or not ev.group(1).strip():
         fails.append("evidence missing for hypothesis")
-    if conf and conf.group(1) == "High" and len(set(URL.findall(why + "\n".join(findings)))) < 2:
-        fails.append("High confidence needs at least two independent sourced findings")
+    if conf and conf.group(1) == "High" and len({host(u) for u in URL.findall("\n".join(findings))}) < 2:
+        fails.append("High confidence needs at least two independent sourced findings (two different source sites)")
     if not re.search(r"\*\*Result:\*\*\s*(PASS|BELOW-FLOOR|UNKNOWN)", "\n".join(sec.get("Pay check", []))):
         fails.append("Pay check Result must be PASS, BELOW-FLOOR or UNKNOWN")
     if not [l for l in sec.get("Emphasis plan", []) if l.strip().startswith("- ")]:
         warns.append("emphasis plan is empty")
     use = "\n".join(sec.get("Use in documents", []))
     letter = re.search(r"\*\*Cover letter sentence:\*\*\s*(.+)", use)
-    if letter and letter.group(1).strip().lower() not in ("none", "none."):
+    if letter and not re.match(r"none\b", letter.group(1).strip(), re.I):
         if not conf or conf.group(1) != "High":
             fails.append("cover letter sentence used without High confidence")
-    if re.search(r"linkedin\.com/in/", raw) and tier and tier.group(1) == "QUICK":
-        warns.append("LinkedIn profile URL in a QUICK file; people lookups are DEEP and via web search only")
     return fails, warns
 
 

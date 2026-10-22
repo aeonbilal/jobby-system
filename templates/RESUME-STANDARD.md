@@ -186,7 +186,7 @@ The profile (§3.5, ≤45 words) contains **1–2 accomplishments of type Q or R
 - **Each project:** name · context (own, client, volunteer, course) · dates, then 1–3 Q or R bullets with HOW, plus a link only if it is public and polished.
 - **Don't use it** to pad, to repeat a job's bullets, or for hobbies with no relevance to the role.
 
-### 13.7 Worked examples from the trainer's slides (2026-10-22)
+### 13.8 Worked examples from the trainer's slides (2026-10-22)
 Sources cited on the slides: status.net, themuse.com, indeed.com accomplishment-statement guides. How each grades under §13:
 - PASS, quantified (Q): "Cut data processing time by 62% by building a new cloud data infrastructure, leading to more prompt insights." It gives the result, the number and the HOW.
 - PASS, quantified (Q): "Optimized four web applications for mobile devices and increased downloads by 120%."
