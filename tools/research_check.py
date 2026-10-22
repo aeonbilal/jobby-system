@@ -10,7 +10,7 @@ import datetime, json, re, sys
 from urllib.parse import urlparse
 
 REQUIRED = ["Findings", "Why this role exists", "Emphasis plan", "Company vocabulary", "Pay check", "Red flags", "Use in documents"]
-URL = re.compile(r"https?://\S+")
+URL = re.compile(r"https?://\S+", re.I)
 DATE = re.compile(r"accessed\s+(\d{4}-\d{2}-\d{2})", re.I)
 PLACEHOLDER = re.compile(r"<[A-Za-z][^<>\n]{1,}>")
 # Abbreviations that end in a period but do not end a sentence.
@@ -50,6 +50,21 @@ def full_host(u):
     return h[4:] if h.startswith("www.") else h
 
 
+# Tag variants: [hiring-manager], [Hiring Manager], [hiring_manager], [people-in-role], [people in role].
+PERSON_TAG = re.compile(r"\s*-\s*\[\s*(hiring[-_ ]manager|people[-_ ]in[-_ ]role)\s*\]", re.I)
+HM_TAG = re.compile(r"\[\s*hiring[-_ ]manager\s*\]", re.I)
+
+
+def is_linkedin(text):
+    """True when any cited URL is hosted on LinkedIn (any subdomain) or its lnkd.in shortener.
+    A search-engine URL whose query merely mentions linkedin.com is not a LinkedIn source."""
+    for u in URL.findall(text):
+        h = full_host(u)
+        if h == "linkedin.com" or h.endswith(".linkedin.com") or h == "lnkd.in":
+            return True
+    return False
+
+
 def employer_domains(raw):
     m = re.search(r"\*\*Employer domains?:\*\*\s*(.+)", raw)
     if not m:
@@ -84,6 +99,9 @@ def sections(text):
     return text, out
 
 
+LEGACY_CUTOFF = "2026-10-22"  # the Pay law applies field was introduced on this date
+
+
 def check(path, legacy=False):
     fails, warns = [], []
     raw, sec = sections(open(path, encoding="utf-8").read())
@@ -112,9 +130,9 @@ def check(path, legacy=False):
                     fails.append("access date in the future: " + f.strip()[:80])
             except ValueError:
                 fails.append("invalid access date: " + f.strip()[:80])
-        if re.search(r"linkedin\.com/", f, re.I) and re.match(r"\s*-\s*\[(hiring-manager|people-in-role)\]", f, re.I):
+        if is_linkedin(f) and PERSON_TAG.match(f):
             fails.append("LinkedIn URL cited as a source for a person (hiring-manager or people-in-role); use a search-engine result or the person's non-LinkedIn public page (§14.3): " + f.strip()[:60])
-        elif re.search(r"linkedin\.com/", f, re.I):
+        elif is_linkedin(f):
             warns.append("LinkedIn URL cited as a source; people lookups go through a search engine, never LinkedIn scraping (§14.3): " + f.strip()[:60])
     why = "\n".join(sec.get("Why this role exists", []))
     conf = re.search(r"\*\*Confidence:\*\*\s*(High|Medium|Low)\b", why)
@@ -138,7 +156,7 @@ def check(path, legacy=False):
             fails.append("High confidence needs '**Employer domains:**' filled in (the employer's own sites; subdomains count as employer)")
         elif not any(source_type(f, domains) == "third-party" for f in findings if URL.search(f)):
             fails.append("High confidence needs at least one finding from a source NOT run by the employer (news, government record, regulator, third party) (§14.2)")
-    hm = [l for l in findings if re.search(r"\[hiring-manager\]", l, re.I)]
+    hm = [l for l in findings if HM_TAG.search(l)]
     if hm and re.search(r"\b(family|spouse|wife|husband|partner|children|kids|home address|religion|age \d|birthday|instagram|facebook|tiktok)\b", "\n".join(hm), re.I):
         fails.append("hiring-manager finding includes non-professional personal detail (§14.3 privacy)")
     if re.search(r"\*\*Application status:\*\*\s*closed", raw, re.I) and [l for l in hm if not re.search(r"\bredacted\b", l, re.I)]:
@@ -148,12 +166,17 @@ def check(path, legacy=False):
     pay = "\n".join(sec.get("Pay check", []))
     law = re.search(r"\*\*Pay law:\*\*[ \t]*(\S.*)?", pay)
     applies = re.search(r"\*\*Pay law applies:\*\*[ \t]*(\S+)?", pay)
-    val = applies.group(1).strip(".").lower() if applies and applies.group(1) else None
+    val = applies.group(1).strip(".,;:").lower() if applies and applies.group(1) else None
     if val not in (None, "yes", "no", "unknown"):
         fails.append("Pay law applies must be yes, no or unknown (§14.4)")
     elif val is None:
         msg = "Pay law applies line missing or empty: set yes, no or unknown (§14.4)"
-        (warns if legacy else fails).append(msg + (" [legacy note]" if legacy else ""))
+        rd = re.search(r"\*\*Researched:\*\*\s*(\d{4}-\d{2}-\d{2})", raw)
+        new_note = bool(rd) and rd.group(1) >= LEGACY_CUTOFF
+        if legacy and new_note:
+            fails.append(msg + f" (--legacy only covers notes researched before {LEGACY_CUTOFF})")
+        else:
+            (warns if legacy else fails).append(msg + (" [legacy note]" if legacy else ""))
     if val == "yes" and (not law or not law.group(1) or re.match(r"(none|n/a)\b", law.group(1).strip(), re.I)):
         fails.append("Pay law applies is yes but the Pay law line does not cite the law (§14.4)")
     if not law or not law.group(1):

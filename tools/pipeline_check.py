@@ -16,16 +16,29 @@ def field(raw, name):
 
 
 def date(v):
+    # Strict YYYY-MM-DD: Python 3.11+ fromisoformat also accepts 20261020 and week dates.
+    if not v or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+        return None
     try:
         return datetime.date.fromisoformat(v)
-    except (TypeError, ValueError):
+    except ValueError:
         return None
+
+
+STATUSES = {"discovered", "approved", "ready", "applied", "replied", "interviewing", "offer",
+            "closed-rejected", "closed-stale", "closed-withdrawn"}  # templates/opportunity.md
+FIELDS = ("Status", "Approved on", "Researched tier", "Deep researched on")
 
 
 def check(path, research=None):
     fails, warns = [], []
     raw = re.sub(r"<!--.*?-->", "", open(path, encoding="utf-8").read(), flags=re.S)
+    for n in FIELDS:
+        if len(re.findall(r"\*\*" + re.escape(n) + r":\*\*", raw)) > 1:
+            fails.append(f"{n} appears more than once; keep a single line")
     status = (field(raw, "Status") or "").lower()
+    if status and status not in STATUSES:
+        fails.append(f"Status '{status}' is not a pipeline status (templates/opportunity.md)")
     tier = (field(raw, "Researched tier") or "").lower()
     if not tier:
         warns.append("Researched tier missing (legacy pipeline file?): add none, quick or deep")
@@ -55,7 +68,14 @@ def check(path, research=None):
     if status not in ("", "discovered") and not appr and not status.startswith("closed"):
         warns.append("status is past discovered but Approved on is missing")
     if research:
-        rt = re.search(r"\*\*Tier:\*\*\s*(QUICK|DEEP)", open(research, encoding="utf-8").read())
+        try:
+            rtext = open(research, encoding="utf-8").read()
+        except OSError as e:
+            fails.append(f"cannot read research file: {e}")
+            rtext = None
+        rt = re.search(r"\*\*Tier:\*\*\s*(QUICK|DEEP)\b", rtext or "", re.I)
+        if rtext is not None and not rt:
+            fails.append("research.md has no Tier line (QUICK or DEEP) to compare with the pipeline")
         if rt and tier in ("quick", "deep", "none") and rt.group(1).lower() != tier:
             fails.append(f"research.md Tier {rt.group(1)} does not match pipeline Researched tier {tier}")
     return fails, warns
