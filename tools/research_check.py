@@ -27,7 +27,15 @@ def count_sentences(t):
 def host(u):
     h = urlparse(u).netloc.lower().split(":")[0]
     h = h[4:] if h.startswith("www.") else h
-    return ".".join(h.split(".")[-2:])
+    labels = h.split(".")
+    # Keep three labels under two-level public suffixes (gc.ca, co.uk, com.au...), so
+    # jobbank.gc.ca and buyandsell.gc.ca, or acme.co.uk and bbc.co.uk, count as different sites.
+    n = 3 if len(labels) >= 3 and ".".join(labels[-2:]) in TWO_LEVEL else 2
+    return ".".join(labels[-n:])
+
+
+TWO_LEVEL = {"gc.ca", "gov.uk", "co.uk", "org.uk", "ac.uk", "com.au", "gov.au", "org.au", "co.nz", "govt.nz",
+             "co.in", "gov.in", "com.pk", "gov.pk", "com.br", "co.jp", "co.za", "com.mx", "com.sg", "gov.sg"}
 
 
 # Finding areas whose content is written by the employer even when hosted elsewhere (job boards, ATS pages).
@@ -44,16 +52,16 @@ def employer_domains(raw):
     m = re.search(r"\*\*Employer domains?:\*\*\s*(.+)", raw)
     if not m:
         return []
-    return [d.strip().lower().removeprefix("www.") for d in re.split(r"[,\s]+", m.group(1)) if "." in d]
+    return [d.strip().strip(".;").lower().removeprefix("www.") for d in re.split(r"[,\s]+", m.group(1)) if "." in d]
 
 
 def source_type(finding, domains):
     """employer or third-party. Explicit [source: ...] tag wins, except a third-party tag on an
     employer-owned host or employer-authored area, which stays employer (fail-safe)."""
-    area = re.match(r"\s*-\s*\[([a-z-]+)", finding)
+    area = re.match(r"\s*-\s*\[([A-Za-z-]+)", finding)
     hosts = [full_host(u) for u in URL.findall(finding)]
     on_employer = any(h == d or h.endswith("." + d) for h in hosts for d in domains)
-    if on_employer or (area and area.group(1) in EMPLOYER_AREAS):
+    if on_employer or (area and area.group(1).lower() in EMPLOYER_AREAS):
         return "employer"
     tag = SRC_TAG.search(finding)
     if tag:
@@ -126,16 +134,20 @@ def check(path):
             fails.append("High confidence needs '**Employer domains:**' filled in (the employer's own sites; subdomains count as employer)")
         elif not any(source_type(f, domains) == "third-party" for f in findings if URL.search(f)):
             fails.append("High confidence needs at least one finding from a source NOT run by the employer (news, government record, regulator, third party) (§14.2)")
-    if re.search(r"\[hiring-manager\]", "\n".join(findings)) and re.search(r"\b(family|spouse|wife|husband|children|kids|home address|religion|age \d|birthday|instagram|facebook|tiktok)\b", "\n".join(l for l in findings if "[hiring-manager]" in l), re.I):
+    hm = [l for l in findings if re.search(r"\[hiring-manager\]", l, re.I)]
+    if hm and re.search(r"\b(family|spouse|wife|husband|partner|children|kids|home address|religion|age \d|birthday|instagram|facebook|tiktok)\b", "\n".join(hm), re.I):
         fails.append("hiring-manager finding includes non-professional personal detail (§14.3 privacy)")
-    if re.search(r"\[hiring-manager\]", "\n".join(findings)) and re.search(r"\*\*Application status:\*\*\s*closed", raw, re.I):
+    if re.search(r"\*\*Application status:\*\*\s*closed", raw, re.I) and [l for l in hm if not re.search(r"\bredacted\b", l, re.I)]:
         fails.append("application is closed but hiring-manager findings remain; redact them (§14.3, track close-out)")
     if not re.search(r"\*\*Result:\*\*\s*(PASS|BELOW-FLOOR|UNKNOWN)", "\n".join(sec.get("Pay check", []))):
         fails.append("Pay check Result must be PASS, BELOW-FLOOR or UNKNOWN")
     pay = "\n".join(sec.get("Pay check", []))
     if not re.search(r"\*\*Pay law:\*\*\s*\S", pay):
         warns.append("Pay law line missing: name the pay-transparency law where the job is located, or 'none found' (§14.4)")
-    if re.search(r"\*\*Pay law:\*\*\s*(none|not applicable|n/a|does not apply)", pay, re.I) and re.search(r"(no|missing) (pay|salary|wage) range", "\n".join(sec.get("Red flags", [])), re.I):
+    law = re.search(r"\*\*Pay law:\*\*\s*(.+)", pay)
+    no_law = law and re.search(r"^(none|n/a)\b|not applicable|does not apply|doesn't apply|no (applicable )?law|not in force|not yet proclaimed", law.group(1).strip(), re.I)
+    flags = [l for l in sec.get("Red flags", []) if re.search(r"(pay|salary|wage|compensation) (range|scale|band)", l, re.I) and re.search(r"\b(no|missing|not (listed|posted|shown|stated)|absent|without|omit)", l, re.I)]
+    if no_law and flags:
         fails.append("missing-range red flag raised although the Pay law line says no law applies (§14.4)")
     if not [l for l in sec.get("Emphasis plan", []) if l.strip().startswith("- ")]:
         warns.append("emphasis plan is empty")
