@@ -30,7 +30,7 @@ Adding a verb requires retiring or merging one.
 2. **Never fabricate.** Every CV/letter claim traces to dossier evidence. Tailoring = selection, emphasis, framing. Grounding and taste live in the judge pass, never in regex; deterministic checks are form and state only.
 3. **Threshold over quota.** Apply to everything at/above the fit threshold, nothing below it. Volume is an output of match supply, not a target. No padding, no spraying.
 4. **Dedup before spend.** Check `_ledger.md` and `pipeline/` before research or tailoring. Never re-apply to the same company+role as a fresh application. **Channel escalation is different and allowed:** on a silent `applied` opportunity, track proposes a second channel (portal, LinkedIn) at the 14-day mark, the operator approves, and every touch gets its own ledger line. Hard cap: 3 touches per opportunity, each on a distinct channel.
-5. **PII never enters git.** `candidates/` is gitignored. The repo versions the system, not the people.
+5. **PII never enters this repo.** `candidates/` is gitignored here and lives in the separate private repo `job-application-candidates`, checked out as `candidates/`. This repo versions the system; that one versions the people.
 6. **One candidate, one directory.** No cross-candidate artifacts; the seatbelt checks for wrong-name/wrong-company leakage before anything ships.
 7. **Confidentiality is absolute.** `targeting.md` exclusions (current employer, referees' networks) are never overridden.
 8. **Sourcing stays legit.** ATS public endpoints, aggregator APIs, Apify managed actors, Firecrawl search. No DIY scraping behind logins.

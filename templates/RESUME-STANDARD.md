@@ -25,7 +25,7 @@ Rules marked **[S]** are checked by the seatbelt (`resume_qa.py`, which must pas
 
 ## 3. Sections and order
 1. **Name.** Use the legal name exactly as the candidate gave it, plus a post-nominal if it is relevant. **The system never alters, anglicizes, or omits a name, and never "whitens" cultural affiliations, without the candidate's written opt-in logged in dossier.md.**
-2. **[S] Headline.** Start with the posting's exact job title (or the closest truthful title, approved by the operator), then add 1–2 differentiators.
+2. **[S] Headline.** Start with the posting's exact job title (or the closest truthful title, approved by the operator), then add 1–2 differentiators. Layout: the title sits on its own line in capitals, under the contact block and directly above the profile (the trainer's "name your resume" rule, for example SENIOR IT PROJECT MANAGER). It changes per posting and must honestly describe the candidate.
 3. **Contact line.** City, Province · phone · email · LinkedIn. Never a street address (this is convention; Job Bank actually says "address"). **Include LinkedIn only if the profile is complete and consistent with the CV.**
 4. **[S] Status.** Default: `Eligible to work in Canada, no sponsorship required` (plus `available immediately` if true). Name PR or citizenship **only** when the posting requires it, for example security clearance or some government or regulated roles. OHRC treats PR and immigration status as a prohibited question at the application stage.
 5. **[S] Profile.** At most 45 words, no first person. It contains the target title and the posting's top 1–2 requirements. **[J]** Every sentence traces to a dossier fact. LLM-polished wording is fine; generic filler ("results-driven", "dynamic", "passionate") is not.
