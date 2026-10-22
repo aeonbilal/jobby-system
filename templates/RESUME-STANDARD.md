@@ -38,7 +38,9 @@ Rules marked **[S]** are checked by the seatbelt (`resume_qa.py`, which must pas
 9. **Optional sections.**
    - Languages: only when the posting values them. (Fluency did not lift callbacks for foreign-named applicants in Oreopoulos 2011.)
    - Volunteer and Publications: only if relevant.
-   - References: never; they go in the answers pack.
+   - References: never, and never the line "References available upon request"; references go in the answers pack.
+   - No Objective section or objective statement; the employer-focused profile replaces it.
+   - No long paragraphs: the profile is the only prose block (at most 45 words, about 3 lines), and everything else is bullets of at most 2 lines.
 
 ## 4. Bullet formula
 > Extended by §13: bullet taxonomy, the HOW requirement, the qualitative fallback, number provenance, and the blacklist.

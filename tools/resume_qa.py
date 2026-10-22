@@ -30,7 +30,7 @@ gmail crm emr ehr ndeb ielts cefr cgpa fcps bds cpr wes icas ats lms jitsu kickb
 NOT_CA = {"programme": "program", "organisation": "organization", "organise": "organize", "analyse": "analyze",
           "recognise": "recognize", "realise": "realize", "specialise": "specialize", "prioritise": "prioritize"}
 BANNED = [r"\bdate of birth\b", r"\bDOB\b", r"\bmarital\b", r"\bSIN\b\s*[:#]?\s*\d", r"\breligion\b", r"\bnationality\b",
-          r"\bage\s*:\s*\d", r"\bphoto\b"]
+          r"\bage\s*:\s*\d", r"\bphoto\b", r"references (are )?available", r"^\s*(career )?objective\s*$"]
 PLACEHOLDER = r"\[(?:company|name|role|title)\]|TODO|<[A-Za-z ]+>|XX+"
 STOP = set("and or the of a & / - – · with in at for to".split())
 WARN_ONLY = {"quantified", "duty_share", "vague"}
