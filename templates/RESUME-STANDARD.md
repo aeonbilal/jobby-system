@@ -185,3 +185,13 @@ The profile (§3.5, ≤45 words) contains **1–2 accomplishments of type Q or R
 - **Placement:** after Experience, or before it when it is the strongest evidence for the target role.
 - **Each project:** name · context (own, client, volunteer, course) · dates, then 1–3 Q or R bullets with HOW, plus a link only if it is public and polished.
 - **Don't use it** to pad, to repeat a job's bullets, or for hobbies with no relevance to the role.
+
+### 13.7 Worked examples from the trainer's slides (2026-10-22)
+Sources cited on the slides: status.net, themuse.com, indeed.com accomplishment-statement guides. How each grades under §13:
+- PASS, quantified (Q): "Cut data processing time by 62% by building a new cloud data infrastructure, leading to more prompt insights." It gives the result, the number and the HOW.
+- PASS, quantified (Q): "Optimized four web applications for mobile devices and increased downloads by 120%."
+- PASS, scope plus result: "Manage 50+ daily customer calls; answer questions, clarify product offerings and resolve account issues for an 88% customer satisfaction rating." Past tense for past roles.
+- PASS, qualitative (R): "Analyzed data from past Twitter marketing campaigns using Looker and Tableau to identify the most and least successful strategies and make recommendations for future campaigns." The tools and HOW are concrete. Stronger if the recommendation's outcome is known.
+- WARN, qualitative: "Forged strong relationships with key industry influencers, boosting the company's reputation and authority." Name the evidence (who, how many, what it led to) or it reads as filler.
+- WARN, weak: "Stayed up-to-date on software and hardware updates to optimize efficiency and productivity for management." The result is vague, so ask the candidate what actually improved.
+- DUTY (D): "Maintained, coordinated and updated the client database, records and email lists." Counts toward the duty cap. Upgrade with scale (how many records) or a result (fewer bounces, faster lookups).
