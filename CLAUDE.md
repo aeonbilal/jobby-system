@@ -58,7 +58,7 @@ candidates/<slug>/          # gitignored — one per person
   documents/                # originals + <file>.extracted.md
   pipeline/                 # one file per opportunity (statuses: discovered → approved → ready → applied → replied → interviewing → offer | closed-*)
   outbox/<slug>/            # CVs, letters, answers.md packs, research.md (§14)
-  _ledger.md                # canonical seen + applied ledger (dedup source of truth)
+  _ledger.md                # canonical seen + applied ledger (dedup + application tracker source of truth; ## Applied uses the 11-field tracker v2 line, see track skill §0)
 templates/                  # dossier, targeting, opportunity, research blanks, RESUME-STANDARD.md
 tools/                      # resume_qa.py (seatbelt), build_cv_from_template.py (house-style build), research_check.py (research.md lint), pipeline_check.py (research tier and approval dates)
 research/                   # evidence behind RESUME-STANDARD (no PII)

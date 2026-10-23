@@ -16,3 +16,4 @@ One line per run: `date — candidate — what ran — counts — anomalies`. Sy
 2026-10-23 — haiqa-nasir — web search (Job Bank, SimplyHired, Greenhouse, SmartRecruiters, jobs.ca, UofT, AOM) — 13 seen/5 qualified/5 filed — QUICK research.md not yet run
 - 2026-10-23 haiqa-nasir: DEEP research (research_check PASS x5) + profile-only spec.json for 5 approved jobs; awaiting Bilal profile approval
 - 2026-10-23 haiqa-nasir: CV+letter built x5 via build_docs; resume_qa 100 x5, letters OK, pipeline_check PASS; audit pass (fixed reverse-chron order, unevidenced claims). Not sent.
+- 2026-10-23 haiqa-nasir: tracker v2 — 10 applications recorded in _ledger.md ## Applied (8 portal: 7 submitted, 1 pending account approval; 2 scheduled email 09:00); pipeline statuses synced; track skill §0/§0.1 added.

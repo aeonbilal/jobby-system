@@ -8,6 +8,25 @@ argument-hint: <candidate-name>
 
 Read `CLAUDE.md` first (`AGENTS.md` points to it). Load `pipeline/` and `_ledger.md`.
 
+## 0. Application tracker (single source of truth)
+Every application touch is ONE line in the candidate's `_ledger.md` under `## Applied`, 11 pipe-separated fields (tracker v2, from 2026-10-23):
+
+`date applied (ET) | company | role | channel | account email | status | resume sent | letter sent | confirmation ref | last reply | next follow-up`
+
+- `channel`: `portal: <site>` or `email: <address>`. `resume sent` and `letter sent` are outbox paths, `none`, or `pasted as text`.
+- `status` (tracker vocabulary): `submitted` | `pending account approval` | `scheduled email` | `replied` | `interview` | `rejected`.
+- `last reply`: `-` or `YYYY-MM-DD <sender>: <one-line gist>`. `next follow-up`: `YYYY-MM-DD` (default applied + 14 days) plus an optional note in parentheses.
+- Edit the line in place when status changes. Channel escalations add a new line. Lines above the tracker v2 marker are legacy 4-column lines; leave them alone.
+- Mirror the change into the pipeline file: `Status:` mapped as submitted→applied, pending account approval/scheduled email→ready, replied→replied, interview→interviewing, rejected→closed-rejected. Add one activity-log line there too. Run `tools/pipeline_check.py`.
+
+## 0.1 Logging an email reply (procedure)
+1. Search the candidate's Gmail for messages received since the last run (`newer_than:2d`, excluding sent mail).
+2. Match each reply to a ledger line by sender domain against the channel/employer domains (pipeline `Employer domains`), then by company or role in the subject/body, then by confirmation ref. If nothing matches, flag it in the digest and don't guess.
+3. Set `last reply` to `YYYY-MM-DD <sender address>: <one-line gist>`. Don't copy the body; minimise data.
+4. Update `status`: an auto-acknowledgement leaves it unchanged (gist "auto-ack"); a human reply or information request sets `replied`; an interview or screener invite sets `interview`; a rejection sets `rejected`. A scheduled email confirmed in Sent moves from `scheduled email` to `submitted`. An account-approval email means apply, then set `submitted`.
+5. Reset `next follow-up`: replied → reply date + 3 days (draft response); interview → interview date; rejected → `-` (run close-out, §3).
+6. Mirror into the pipeline file (status + activity line), then append the OPS-LOG.md line.
+
 ## 1. Sync inbox → pipeline
 Search the candidate's Gmail for threads matching in-flight companies (status `applied` and later). Classify each:
 - Screener / interview invite → status `interviewing`; propose a calendar hold (tentative) for any concrete time.
