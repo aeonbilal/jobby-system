@@ -2,3 +2,4 @@ pypdf
 pyspellchecker
 python-docx
 pymupdf  # optional: hidden-text check
+pytest  # tests: python3 -m pytest tests/  (each test file also runs as a plain script)

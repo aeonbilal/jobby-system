@@ -3,6 +3,9 @@
 
 Usage:
   python3 tools/resume_qa.py CV.pdf --title "Posting Title" [--candidate SLUG] [--max-pages 1] [--posting-requires-status] [--json]
+  python3 tools/resume_qa.py --letter Cover-Letter.pdf [--research outbox/<slug>/research.md] [--max-words 180]
+      letter mode: body <= 180 words, no em-dash, no eligibility/sponsorship/PR/citizenship line, and (with --research)
+      FAIL when research.md Confidence is below High and the letter declares or reuses a research sentence (6+ word run).
   python3 tools/resume_qa.py --audit candidates/<slug>      # score every outbox/*/cv-*.pdf and *-Resume-*.pdf (titles from pipeline/)
 
 Exit code 0 = no FAIL (WARN allowed); 1 = at least one FAIL.
@@ -34,7 +37,7 @@ BANNED = [r"\bdate of birth\b", r"\bDOB\b", r"\bmarital\b", r"\bSIN\b\s*[:#]?\s*
           r"\bage\s*:\s*\d", r"\bphoto\b", r"references (are )?available", r"(?m)^\s*(career )?objective\s*$"]
 PLACEHOLDER = r"\[(?:company|name|role|title)\]|TODO|<[A-Za-z ]+>|XX+"
 STOP = set("and or the of a & / - – · with in at for to".split())
-WARN_ONLY = {"quantified", "duty_share", "vague"}
+WARN_ONLY = {"quantified", "duty_share", "vague", "title_in_posting"}
 HEADINGS = ["PROFILE|SUMMARY", "SKILLS|CORE SKILLS", "EXPERIENCE", "EDUCATION"]
 
 
@@ -107,11 +110,17 @@ including include must required requirements preferred plus years year knowledge
 job duties responsibilities responsible ensure provide support maintain various within across all any per new""".split())
 
 
+def clean_posting(t):
+    """Drop HTML comments and URLs (capture notes, source links) so they never count as posting terms or copied runs."""
+    t = re.sub(r"(?s)<!--.*?-->", " ", t)
+    return re.sub(r"(?i)\b(?:https?://|www\.)\S+", " ", t)
+
+
 def posting_terms(path, top=25):
     """Requirement phrases from a posting file. Bullet lines ('- ', '* ', '•') are requirements, split on 'and' / commas /
     slashes; without bullets, the most frequent 1-2 word phrases per sentence are used."""
     from collections import Counter
-    t = open(path, encoding="utf8").read()
+    t = clean_posting(open(path, encoding="utf8").read())
     bul = [re.sub(r"^\s*[-*•]\s*", "", l).strip() for l in t.splitlines() if re.match(r"^\s*[-*•]\s+", l)]
     terms = []
     if bul:
@@ -306,7 +315,11 @@ def check(pdf, title, candidate=None, max_pages=1, allow_pr=False, name=None, po
     info["grammar"] = "LanguageTool not installed, judge must proof-read (WARN)" if g is None else f"{len(g)} issues"
     if g: R["grammar"] = (False, f"{len(g)} LanguageTool en-CA issues")
     if posting:
-        cp = copied_ngrams(body, open(posting, encoding="utf-8").read()) if m else []
+        ptxt = open(posting, encoding="utf-8").read()
+        cp = copied_ngrams(body, clean_posting(ptxt)) if m else []
+        tw2 = [w for w in re.findall(r"[a-z']+", title.lower()) if w not in STOP]
+        miss = [w for w in tw2 if w.rstrip("s") not in clean_posting(ptxt).lower()]
+        R["title_in_posting"] = (not miss, f"--title words not found anywhere in posting.md: {miss}" if miss else "ok: every --title word appears in the full posting.md")
         R["profile_copy"] = (not cp, f"profile copies {COPY_N}+ consecutive posting words: {cp} (paraphrase; single keywords are fine)" if cp else f"ok: no {COPY_N}+ word run shared with the posting")
         kc = keyword_coverage(text, posting_terms(posting))
         info["keywords"] = (f"zone 1 covers {kc['zone1_pct']}% of posting terms {kc['zone1']} (WARN only). missing everywhere: {kc['missing']}; "
@@ -340,7 +353,59 @@ def pipeline_title(cand_dir, slug):
     return t, s
 
 
+LETTER_MAX = 180  # RESUME-STANDARD / tailor skill: cover-letter body at most 180 words
+
+
+def letter_body(text):
+    m = re.search(r"(?s)\bDear\b[^\n]*\n(.*?)\n\s*(?:Sincerely|Kind regards|Regards|Best regards|Yours)\b", text)
+    return (m.group(1) if m else text).strip()
+
+
+def research_conf(path):
+    t = open(path, encoding="utf-8").read()
+    c = re.search(r"(?im)^\s*-\s*\*\*Confidence:\*\*\s*(\w+)", t)
+    s = re.search(r"(?im)^\s*-\s*\*\*Cover letter sentence:\*\*\s*(.+)$", t)
+    return (c.group(1).capitalize() if c else "Unknown"), (s.group(1).strip() if s else ""), t
+
+
+def check_letter(pdf, research=None, max_words=LETTER_MAX):
+    """Cover-letter checks: body words, em-dash, eligibility line, research sentence only at High confidence."""
+    text = joined(pypdf_text(pdf)) if pdf.lower().endswith(".pdf") else open(pdf, encoding="utf-8").read()
+    body = letter_body(text)
+    R = {}
+    n = len(body.split())
+    R["words"] = (n <= max_words, f"{n} body words (max {max_words})")
+    R["no_emdash"] = ("\u2014" not in text, f"{text.count(chr(0x2014))} em-dashes")
+    st = sorted({re.sub(r"\s+", " ", m.group(0).strip()) for m in STATUS_RE.finditer(text)})
+    R["no_status"] = (not st, f"status/eligibility line present {st}" if st else "ok: no status/eligibility line")
+    if research:
+        conf, sent, rtxt = research_conf(research)
+        declared = bool(sent) and not re.match(r"(?i)none\b", sent)
+        # research-derived text: hypothesis + findings, minus source URLs; a 6+ word run shared with the letter = used
+        rt = clean_posting(re.sub(r"(?is)^.*?## Findings", "", rtxt, count=1))
+        rt = re.split(r"(?m)^## (?:Emphasis plan|Use in documents|Profile map)", rt)[0]
+        shared = copied_ngrams(body, rt)
+        bad = conf != "High" and (declared or shared)
+        R["research_sentence"] = (not bad, (f"research confidence {conf} (< High) but letter uses research: declared={sent!r} shared={shared}"
+                                            if bad else f"ok: confidence {conf}; declared={sent or 'none'!r}; shared runs={shared}"))
+    fails = [k for k, (ok, _) in R.items() if not ok]
+    return dict(file=pdf, rules={k: dict(ok=ok, detail=d) for k, (ok, d) in R.items()}, fails=fails)
+
+
 def main():
+    if "--letter" in sys.argv:
+        lp = argparse.ArgumentParser(description="cover-letter mode")
+        lp.add_argument("--letter", required=True, help="cover letter PDF (or .txt)")
+        lp.add_argument("--research", help="outbox/<slug>/research.md: enables the research-sentence check")
+        lp.add_argument("--max-words", type=int, default=LETTER_MAX)
+        lp.add_argument("--json", action="store_true")
+        b = lp.parse_args()
+        r = check_letter(b.letter, b.research, b.max_words)
+        if b.json: print(json.dumps(r, indent=1))
+        else:
+            for k, v in r["rules"].items(): print(f"{'PASS' if v['ok'] else 'FAIL':4}  {k:18} {v['detail']}")
+            print("LETTER", "OK" if not r["fails"] else "FAILED: " + ", ".join(r["fails"]))
+        sys.exit(1 if r["fails"] else 0)
     ap = argparse.ArgumentParser()
     ap.add_argument("pdf", nargs="?")
     ap.add_argument("--title", default="")

@@ -11,7 +11,7 @@ Approved on date (the operator's request to draft counts as approval), and Deep 
 A draft with no Drafted on line FAILs for files discovered on or after 2026-10-22 (older files: WARN, legacy).
 Exit 0 = PASS (warnings allowed), 1 = FAIL, 2 = usage error.
 """
-import datetime, json, re, sys
+import os, datetime, json, re, sys
 
 
 def field(raw, name):
@@ -118,7 +118,8 @@ def main():
             print(__doc__); sys.exit(2)
         research = argv[k + 1]; del argv[k:k + 2]
     args = [a for a in argv if a != "--json"]
-    if len(args) != 1:
+    if len(args) != 1 or os.path.isdir(args[0]) or not os.path.isfile(args[0]):
+        if args and os.path.isdir(args[0]): print(f"error: {args[0]} is a directory; pass one pipeline/<file>.md\n")
         print(__doc__); sys.exit(2)
     fails, warns = check(args[0], research)
     if "--json" in argv:
