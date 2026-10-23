@@ -51,6 +51,8 @@ Reviewer 2, 2026-10-20 (America/Toronto). I did my independent research first (s
 
 ## 3. Rules I would change or drop
 
+> **Superseded 2026-10-22 (operator):** recommendations below for an eligibility status line no longer apply. CVs and letters now carry no status line; see DECISIONS.md 2026-10-22 and RESUME-STANDARD §3.4. Kept as the historical record.
+
 1. **§3.4 Status line "Permanent Resident · Available immediately" → change to an eligibility phrasing.**
    - Use `Eligible to work in Canada · No sponsorship required` (plus `Available immediately` if true) by default.
    - Name PR or citizenship **only** when the posting explicitly requires it (e.g., federal security clearance, some government or regulated roles).

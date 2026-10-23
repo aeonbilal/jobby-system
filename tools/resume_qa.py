@@ -2,7 +2,7 @@
 """Resume QA seatbelt for templates/RESUME-STANDARD.md (v2).
 
 Usage:
-  python3 tools/resume_qa.py CV.pdf --title "Posting Title" [--candidate SLUG] [--max-pages 1] [--allow-pr] [--json]
+  python3 tools/resume_qa.py CV.pdf --title "Posting Title" [--candidate SLUG] [--max-pages 1] [--posting-requires-status] [--json]
   python3 tools/resume_qa.py --audit candidates/<slug>      # score every outbox/*/cv-*.pdf and *-Resume-*.pdf (titles from pipeline/)
 
 Exit code 0 = no FAIL (WARN allowed); 1 = at least one FAIL.
@@ -171,6 +171,9 @@ def classify(b):
     return k, how
 
 
+STATUS_RE = re.compile(r"(eligible|authori[sz]ed|entitled|legally able)\s+to\s+work|work(ing)?\s+(eligibility|authori[sz]ation|permit)|(no|without|not)\s+(visa\s+)?sponsorship|sponsorship\s+(not\s+)?required|requires?\s+(no\s+)?sponsorship|permanent\s+resident|canadian\s+citizen(ship)?|\bPR\s+status|open\s+work\s+permit", re.I)
+
+
 def check(pdf, title, candidate=None, max_pages=1, allow_pr=False, name=None, posting=None):
     from spellchecker import SpellChecker
     R, info = {}, {}
@@ -268,8 +271,12 @@ def check(pdf, title, candidate=None, max_pages=1, allow_pr=False, name=None, po
     R["no_emdash"] = ("—" not in text, f"{text.count('—')} em-dashes")
     ban = [p for p in BANNED if re.search(p, text, re.I)] + re.findall(PLACEHOLDER, text)
     R["banned"] = (not ban, f"banned/placeholder hits: {ban}")
-    pr = re.search(r"permanent resident", text, re.I)
-    R["status"] = (allow_pr or not pr, "PR named (use 'Eligible to work in Canada, no sponsorship required' unless posting requires PR)" if pr else "ok")
+    # RESUME-STANDARD §3.4 (2026-10-22): no work-eligibility / sponsorship / PR / citizenship line unless the posting asks for it
+    st = sorted({re.sub(r"\s+", " ", m.group(0).strip()) for m in STATUS_RE.finditer(text)})
+    if not st: smsg = "ok: no status/eligibility line"
+    elif allow_pr: smsg = f"status/eligibility line present {st}, allowed by --posting-requires-status"
+    else: smsg = f"status/eligibility line present {st}: remove it (pass --posting-requires-status only if the posting explicitly asks for it on the document)"
+    R["status"] = (allow_pr or not st, smsg)
     hid = hidden_text(pdf)
     R["hidden"] = (True, "pymupdf not installed, hidden-text check skipped (WARN)") if hid is None else (not hid, f"{hid}")
     g = grammar(text)
@@ -315,7 +322,7 @@ def main():
     ap.add_argument("--candidate")
     ap.add_argument("--name", help="Firstname Lastname, to check the filename prefix")
     ap.add_argument("--max-pages", type=int, default=1)
-    ap.add_argument("--allow-pr", action="store_true")
+    ap.add_argument("--posting-requires-status", "--allow-pr", dest="allow_pr", action="store_true", help="the posting explicitly asks for work eligibility/PR on the document (--allow-pr is a deprecated alias)")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--posting", help="posting text/markdown file: keyword-coverage report (warning only, never fails)")
     ap.add_argument("--audit", help="candidates/<slug>: score every CV in outbox")

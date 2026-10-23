@@ -21,7 +21,7 @@ Proposed standard for every CV the tailor verb produces. Builds on the 2026-07-0
 1. **Name** (+ post-nominal if relevant)
 2. **Target headline**: the posting's exact job title (or closest truthful title) first, then 1-2 differentiators. E.g. `Dental Receptionist · Internationally Trained Dentist (BDS)`.
 3. **Contact line**: City, Province · phone · email · LinkedIn (+ portfolio/GitHub if relevant). No street address.
-4. **Status line (Canada, when it helps)**: `Permanent Resident · Available immediately` or work-permit type. Put it in the profile or contact line, once.
+4. *(Superseded 2026-10-22: no status line on CVs or letters; see DECISIONS.md and RESUME-STANDARD §3.4.)* **Status line (Canada, when it helps)**: `Permanent Resident · Available immediately` or work-permit type. Put it in the profile or contact line, once.
 5. **Profile**: 2-3 lines max (≤ 45 words), no first person, no adjectives the dossier can't prove. Must contain the target title and the top 2 posting requirements.
 6. **Skills**: grouped, comma or middot separated, ≤ 3 lines; technical/tool skills in their own labelled group (`Tools:` / `Technical:`). Every skill must appear in the dossier.
 7. **Experience**: reverse chronological. Canadian/North American experience leads within each role group if dates allow; otherwise keep chronology but surface it in the profile.

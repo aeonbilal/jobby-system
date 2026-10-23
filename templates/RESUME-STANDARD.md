@@ -27,7 +27,7 @@ Rules marked **[S]** are checked by the seatbelt (`resume_qa.py`, which must pas
 1. **Name.** Use the legal name exactly as the candidate gave it, plus a post-nominal if it is relevant. **The system never alters, anglicizes, or omits a name, and never "whitens" cultural affiliations, without the candidate's written opt-in logged in dossier.md.**
 2. **[S] Headline.** Start with the posting's exact job title (or the closest truthful title, approved by the operator), then add 1–2 differentiators. Layout: the title sits on its own line in capitals, under the contact block and directly above the profile (the trainer's "name your resume" rule, for example SENIOR IT PROJECT MANAGER). It changes per posting and must honestly describe the candidate.
 3. **Contact line.** City, Province · phone · email · LinkedIn. Never a street address (this is convention; Job Bank actually says "address"). **Include LinkedIn only if the profile is complete and consistent with the CV.**
-4. **[S] Status.** Default: `Eligible to work in Canada, no sponsorship required` (plus `available immediately` if true). Name PR or citizenship **only** when the posting requires it, for example security clearance or some government or regulated roles. OHRC treats PR and immigration status as a prohibited question at the application stage.
+4. **[S] No status line (operator, 2026-10-22).** The CV and the cover letter carry **no** work-eligibility, sponsorship, PR, citizenship or immigration line (for example `Eligible to work in Canada, no sponsorship required`). It signals newcomer status and makes screening harder. Work authorization is answered only in application forms and knockout questions. Exception: state eligibility on the document only when the posting explicitly asks for it on the CV or letter; then use the posting's wording, and name PR or citizenship only if the posting requires that status. `resume_qa.py` fails any such line unless `--posting-requires-status` is given. `available immediately` may go in the letter when relevant, never paired with a status claim.
 5. **[S] Profile.** At most 45 words, no first person. It contains the target title and the posting's top 1–2 requirements. **[J]** Every sentence traces to a dossier fact. LLM-polished wording is fine; generic filler ("results-driven", "dynamic", "passionate") is not.
    - **Format is the agent's choice per posting (operator, 2026-10-22).** Option A: the prose profile above. Option B: a "Summary of Qualifications" of 3–5 bullets, at most 75 words in total, each bullet one line (two at most). Bullet pattern from the trainer's samples: (1) time in the field related to the target job ("4+ years of customer service experience"); (2) related education or training; (3) one relevant accomplishment, type Q or R; (4) the posting's top skills and tools. Prefer B for skimmable, skills-driven roles and early-career or career-change candidates. Prefer A for senior roles where a narrative reads better. Same rules either way: no first person, every line traces to the dossier, no filler. Trainer-sample phrases like "exceptional interpersonal skills", "strong work ethic", "positive attitude" stay banned unless backed by evidence.
 6. **Skills.** Grouped and at most 3 lines, with tools and technical skills in their own labelled group (`Tools:`). Every skill must be in the dossier.
@@ -75,7 +75,7 @@ Rules marked **[S]** are checked by the seatbelt (`resume_qa.py`, which must pas
 - **Attach the tailored file, never a generic `<Name>-CV.pdf` copy.** Gmail drafts and portal checklists point to the exact tailored filename.
 
 ## 7. Canadian norms and Ontario law
-- **[S]** Never include a photo, date of birth or age, gender, marital or family status, religion, SIN, nationality or citizenship (other than the §3.4 eligibility line), health, or salary history. Source: [OHRC, Designing application forms](https://www.ohrc.on.ca/en/iv-human-rights-issues-all-stages-employment/4-designing-application-forms); the earlier `human-rights-and-workplace-hiring` link is dead.
+- **[S]** Never include a photo, date of birth or age, gender, marital or family status, religion, SIN, nationality, citizenship or immigration status (no eligibility line either; §3.4), health, or salary history. Source: [OHRC, Designing application forms](https://www.ohrc.on.ca/en/iv-human-rights-issues-all-stages-employment/4-designing-application-forms); the earlier `human-rights-and-workplace-hiring` link is dead.
 - **[S]** Spellcheck against an **en-CA dictionary** (centre, organization, licence as a noun, counselling, defence, paediatric). A US-only dictionary gives false failures. Use a per-candidate allow-list for proper nouns.
 - **[S]** Run a grammar check (LanguageTool en-CA) with zero unresolved issues. Where it isn't installed, resume_qa.py warns and the judge does the check by reading.
 - **Ontario postings (ESA, O. Reg. 476/24, in force 2026-01-01, employers with 25+ staff). Pay-range checks for any jurisdiction follow §14.4.**
@@ -89,7 +89,7 @@ Rules marked **[S]** are checked by the seatbelt (`resume_qa.py`, which must pas
 - [ ] Page count (1, or 2 if justified), single column, extracted text in order
 - [ ] Headline contains the posting title
 - [ ] Profile at most 45 words, no first person
-- [ ] No em-dashes, placeholders, or banned personal data, and no "permanent resident" unless `--allow-pr`
+- [ ] No em-dashes, placeholders, or banned personal data, and no work-eligibility, sponsorship, PR or citizenship line unless `--posting-requires-status` (the posting explicitly asks for it on the document)
 - [ ] en-CA spelling clean (pypdf text), plus grammar where LanguageTool is available
 - [ ] Foreign employers have descriptors
 - [ ] Filename and PDF metadata follow §6, file under 1 MB
@@ -118,7 +118,7 @@ Rules marked **[S]** are checked by the seatbelt (`resume_qa.py`, which must pas
 |---|---|---|
 | Files named `outbox/<slug>/cv-<company>.pdf` | tailor seatbelt | `outbox/<slug>/Firstname-Lastname-Resume-<Company>.pdf` (the folder slug stays) |
 | One page always | DECISIONS 2026-07-09 house style | 1 page by default; 2 if justified and not padded |
-| "Toronto permanent resident" in profiles | existing CVs | Eligibility wording; PR only if the posting requires it |
+| "Toronto permanent resident" in profiles; later the eligibility line | existing CVs; v2 §3.4 before 2026-10-22 | No status line at all; eligibility only if the posting explicitly asks for it on the document |
 | Positioning-string headline ("Internationally trained dentist · …") | DECISIONS 2026-07-09 positioning pattern | Posting title first; the trajectory phrase may follow as a differentiator |
 | `EXPERIENCE (ORDERED BY RELEVANCE)` (seen in 4 CVs) | ad hoc | Standard heading, reverse chronological |
 | Unchanged | | No em-dashes; Calibri 10pt and teal; no photo or DOB; NDEB never in dental-clinic applications; judge non-skippable; human send-gate |
