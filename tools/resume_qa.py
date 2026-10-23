@@ -8,7 +8,8 @@ Usage:
 Exit code 0 = no FAIL (WARN allowed); 1 = at least one FAIL.
 Deps: pip install -r tools/requirements.txt  (pypdf, pyspellchecker; pymupdf optional for hidden-text check;
 LanguageTool CLI optional for grammar).
-  --posting FILE adds a hybrid-tailoring keyword-coverage report (RESUME-STANDARD §12): WARN only, never a FAIL.
+  --posting FILE adds a hybrid-tailoring keyword-coverage report (RESUME-STANDARD §12, WARN only) and the profile_copy
+  check (§3.5): FAIL if the profile shares 6+ consecutive words with the posting.
 Text for parse/spell checks comes from pypdf, NOT pdftotext: pdftotext de-hyphenates line-end hyphens
 ("government-\\nschools" -> "governmentschools") and produced false defects in the 2026-10-20 audit.
 """
@@ -16,8 +17,8 @@ import argparse, glob, json, os, re, shutil, subprocess, sys, zipfile
 from pypdf import PdfReader
 
 WEIGHTS = dict(pages=10, ats=10, headline=15, profile=10, no_first_person=10, quantified=0,
-               filename=10, foreign_desc=5, spelling=10, no_emdash=10, banned=0, metadata=0, hidden=0, status=0)
-# quantified is a judge target (WARN only, weight 0); banned/metadata/hidden/status are hard fails without score weight.
+               filename=10, foreign_desc=5, spelling=10, no_emdash=10, banned=0, metadata=0, hidden=0, status=0, profile_copy=0)
+# quantified is a judge target (WARN only, weight 0); banned/metadata/hidden/status/profile_copy are hard fails without score weight.
 # Score is out of 90 for the weighted rules, reported scaled to 100.
 
 # en-CA additions: Canadian/British spellings a US dictionary rejects, plus common resume vocabulary.
@@ -174,6 +175,28 @@ def classify(b):
 STATUS_RE = re.compile(r"(eligible|authori[sz]ed|entitled|legally able)\s+to\s+work|work(ing)?\s+(eligibility|authori[sz]ation|permit)|(no|without|not)\s+(visa\s+)?sponsorship|sponsorship\s+(not\s+)?required|requires?\s+(no\s+)?sponsorship|permanent\s+resident|canadian\s+citizen(ship)?|\bPR\s+status|open\s+work\s+permit", re.I)
 
 
+COPY_N = 6  # RESUME-STANDARD §3.5 (2026-10-22): profile must paraphrase; 6+ consecutive posting words = copied
+
+
+def _words(t):
+    t = re.sub(r"(?s)<!--.*?-->", " ", t)
+    return re.findall(r"[a-z0-9]+(?:['&+][a-z0-9]+)*", t.lower().replace("\u2019", "'"))
+
+
+def copied_ngrams(profile, posting, n=COPY_N):
+    """Maximal runs of >= n consecutive words shared by profile and posting (case/punctuation-insensitive)."""
+    pw, qw = _words(profile), _words(posting)
+    grams = {tuple(qw[i:i + n]) for i in range(len(qw) - n + 1)}
+    hits, i = [], 0
+    while i <= len(pw) - n:
+        if tuple(pw[i:i + n]) in grams:
+            j = i + n
+            while j < len(pw) and tuple(pw[j - n + 1:j + 1]) in grams: j += 1
+            hits.append(" ".join(pw[i:j])); i = j
+        else: i += 1
+    return hits
+
+
 def check(pdf, title, candidate=None, max_pages=1, allow_pr=False, name=None, posting=None):
     from spellchecker import SpellChecker
     R, info = {}, {}
@@ -283,6 +306,8 @@ def check(pdf, title, candidate=None, max_pages=1, allow_pr=False, name=None, po
     info["grammar"] = "LanguageTool not installed, judge must proof-read (WARN)" if g is None else f"{len(g)} issues"
     if g: R["grammar"] = (False, f"{len(g)} LanguageTool en-CA issues")
     if posting:
+        cp = copied_ngrams(body, open(posting, encoding="utf-8").read()) if m else []
+        R["profile_copy"] = (not cp, f"profile copies {COPY_N}+ consecutive posting words: {cp} (paraphrase; single keywords are fine)" if cp else f"ok: no {COPY_N}+ word run shared with the posting")
         kc = keyword_coverage(text, posting_terms(posting))
         info["keywords"] = (f"zone 1 covers {kc['zone1_pct']}% of posting terms {kc['zone1']} (WARN only). missing everywhere: {kc['missing']}; "
                             f"only in experience: {kc['zone2_only']}. Missing terms are gaps unless the dossier supports them.")
