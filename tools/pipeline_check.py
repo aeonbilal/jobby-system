@@ -5,6 +5,10 @@ Usage: python3 tools/pipeline_check.py <pipeline/opportunity.md> [--research <re
 Rules: Researched tier is none, quick or deep. deep needs Approved on and Deep researched on (YYYY-MM-DD),
 with Deep researched on >= Approved on, and a status past discovered. With --research, the research.md Tier
 must match (QUICK = quick, DEEP = deep).
+Draft gate (RESUME-STANDARD §14.1, 2026-10-22): a pipeline file that records a drafted CV or cover letter
+(a `Drafted on` date, or a Resume/Cover-Letter file under ## Artifacts) needs Researched tier deep, an
+Approved on date (the operator's request to draft counts as approval), and Deep researched on <= Drafted on.
+A draft with no Drafted on line FAILs for files discovered on or after 2026-10-22 (older files: WARN, legacy).
 Exit 0 = PASS (warnings allowed), 1 = FAIL, 2 = usage error.
 """
 import datetime, json, re, sys
@@ -27,7 +31,9 @@ def date(v):
 
 STATUSES = {"discovered", "approved", "ready", "applied", "replied", "interviewing", "offer",
             "closed-rejected", "closed-stale", "closed-withdrawn"}  # templates/opportunity.md
-FIELDS = ("Status", "Approved on", "Researched tier", "Deep researched on")
+FIELDS = ("Status", "Approved on", "Researched tier", "Deep researched on", "Drafted on")
+DRAFT_RULE_FROM = datetime.date(2026, 10, 22)
+DRAFT_FILE = re.compile(r"(?i)(resume|cv|cover[-_ ]letter)[^\s/]*\.(pdf|docx)")
 
 
 def check(path, research=None):
@@ -67,6 +73,28 @@ def check(path, research=None):
         fails.append("Deep researched on is set but Researched tier is not deep")
     if status not in ("", "discovered") and not appr and not status.startswith("closed"):
         warns.append("status is past discovered but Approved on is missing")
+    # draft gate: research first, then drafting
+    drafted_raw = field(raw, "Drafted on")
+    drafted = date(drafted_raw)
+    if drafted_raw and drafted_raw.lower() != "n/a" and not drafted:
+        fails.append("Drafted on is not a valid YYYY-MM-DD date")
+    art = re.search(r"(?ms)^## Artifacts\s*$(.*?)(?=^## |\Z)", raw)
+    has_draft_files = bool(art and DRAFT_FILE.search(art.group(1)))
+    if drafted or has_draft_files:
+        if not drafted:
+            disc = date(field(raw, "Discovered"))
+            msg = "CV/letter files listed under Artifacts but Drafted on is missing"
+            (fails if disc and disc >= DRAFT_RULE_FROM else warns).append(msg + ("" if disc and disc >= DRAFT_RULE_FROM else " (legacy file)"))
+        if drafted and drafted > today:
+            fails.append("Drafted on is in the future")
+        if drafted and tier != "deep":
+            fails.append("CV/letter drafted without completed DEEP research (Researched tier must be deep; research runs before drafting)")
+        if drafted and not appr:
+            fails.append("CV/letter drafted but Approved on is missing (record the operator's request to draft as Approved on)")
+        if drafted and appr and drafted < appr:
+            fails.append(f"Drafted on ({drafted}) is before Approved on ({appr})")
+        if drafted and deep and deep > drafted:
+            fails.append(f"Deep researched on ({deep}) is after Drafted on ({drafted}); researching after drafting is a defect")
     if research:
         try:
             rtext = open(research, encoding="utf-8").read()

@@ -8,7 +8,8 @@ argument-hint: <candidate-name> [opportunity-slug]
 
 Read `CLAUDE.md` first (`AGENTS.md` points to it). Runs on every `approved` opportunity (or just the named one). Never on unapproved ones: approval is what authorizes DEEP research and tailoring (scout's QUICK pass is the only research allowed before approval).
 
-## 1. Deep research (only now, after approval)
+## 1. Deep research (only now, after approval; ALWAYS before drafting)
+- **Order is mandatory (§14.1, 2026-10-22).** An operator request to draft or tailor a CV or letter counts as approval: set `Approved on` to that date. Then run the full DEEP tier to completion and record it (`Researched tier: deep`, `Deep researched on`) BEFORE writing anything; build the drafts from it; then set `Drafted on`. Researching after drafting is a defect, and `tools/pipeline_check.py` fails it.
 - **Read `outbox/<slug>/research.md` first** (scout's QUICK pass, RESUME-STANDARD §14). If it is missing, run QUICK now. If the role is operator-flagged or a candidate priority, extend it to DEEP, now that it is approved (news, investor material, government grants and contracts, people in the role via web search, hiring manager's role-relevant professional background only, review pain points paraphrased from the logged-out view, products, tech stack, industry context, location and remote status). When DEEP runs, set `Researched tier: deep` and `Deep researched on: <today>` in the pipeline file (on or after `Approved on`). Re-run `python3 tools/research_check.py outbox/<slug>/research.md --pipeline pipeline/<slug>.md` (exit 0) before writing; it also runs `tools/pipeline_check.py`.
 - Scrape the full posting; extract explicit requirements and the between-the-lines priorities.
 - Company: product, stage/size, recent news, careers-page tone, culture signals → match against the dossier's work-style profile for a grounded culture-fit angle (not flattery — an actual overlap).

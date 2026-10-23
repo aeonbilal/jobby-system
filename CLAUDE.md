@@ -17,8 +17,8 @@ Work that doesn't move one of these doesn't get built.
 `/intake → /scout → /tailor → /track` (skills in `.claude/skills/`; `.agents/skills` is a symlink to the same tree)
 
 - **intake** — documents first, interview second → `dossier.md` + `targeting.md`.
-- **scout**: sweep channels → dedup → **cheap qualify** (metadata-only fit score) → file opportunities ≥ threshold → QUICK `research.md` (hiring hypothesis, RESUME-STANDARD §14) for each filed opportunity → operator approval digest. Cheap qualify is the cost gate: nothing below threshold gets researched. QUICK research is allowed before approval; DEEP research and tailoring happen only after operator approval.
-- **tailor** (approved opportunities only): DEEP research where warranted → writer → judge → deterministic seatbelt → drafts and packs in `outbox/`, Gmail drafts in the candidate's account. Never sends.
+- **scout**: sweep channels → dedup → **cheap qualify** (metadata-only fit score) → file opportunities ≥ threshold → QUICK `research.md` (hiring hypothesis, RESUME-STANDARD §14) for each filed opportunity → operator approval digest. Cheap qualify is the cost gate: nothing below threshold gets researched. QUICK research is allowed before approval; DEEP research and tailoring happen only after operator approval; an operator request to draft a CV or letter counts as approval, and DEEP research must finish before drafting (RESUME-STANDARD §14.1).
+- **tailor** (approved opportunities only; a request to draft = approval): DEEP research, completed and recorded before any drafting → writer → judge → deterministic seatbelt → drafts and packs in `outbox/`, Gmail drafts in the candidate's account. Never sends.
   Every CV must follow **`templates/RESUME-STANDARD.md` (mandatory)** and pass `tools/resume_qa.py` (exit 0) before `ready`. Filename: `Firstname-Lastname-Resume-<Company>.pdf`.
 - **track** — sync replies → update pipeline → draft responses → scoreboard digest.
 
