@@ -14,3 +14,4 @@ One line per run: `date — candidate — what ran — counts — anomalies`. Sy
 
 2026-10-20 — system (build session) — accomplishment upgrade: RESUME-STANDARD §13, intake §2b (.claude+.agents), templates/dossier.md narrative-bank schema, tailor + judge-rubric A1-A7 (both mirrors), resume_qa.py bullet taxonomy/blacklist, new tools/metrics_questionnaire.py — first-candidate audit mix (94 CVs, 766 experience bullets): Q 10% R 38% S 24% D 28%, 8 CVs over 40% duty, 0 blacklist FAILs, 14 vague WARNs; demo D 42% vs old eleve 28% — candidate questionnaire drafted (candidates repo) (not sent); no CVs re-tailored, 0 sent.
 2026-10-23 — haiqa-nasir — web search (Job Bank, SimplyHired, Greenhouse, SmartRecruiters, jobs.ca, UofT, AOM) — 13 seen/5 qualified/5 filed — QUICK research.md not yet run
+- 2026-10-23 haiqa-nasir: DEEP research (research_check PASS x5) + profile-only spec.json for 5 approved jobs; awaiting Bilal profile approval
