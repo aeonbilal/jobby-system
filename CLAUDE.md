@@ -20,6 +20,7 @@ Work that doesn't move one of these doesn't get built.
 - **scout**: sweep channels → dedup → **cheap qualify** (metadata-only fit score) → file opportunities ≥ threshold → QUICK `research.md` (hiring hypothesis, RESUME-STANDARD §14) for each filed opportunity → operator approval digest. Cheap qualify is the cost gate: nothing below threshold gets researched. QUICK research is allowed before approval; DEEP research and tailoring happen only after operator approval; an operator request to draft a CV or letter counts as approval, and DEEP research must finish before drafting (RESUME-STANDARD §14.1).
 - **tailor** (approved opportunities only; a request to draft = approval): DEEP research, completed and recorded before any drafting → writer → judge → deterministic seatbelt → drafts and packs in `outbox/`, Gmail drafts in the candidate's account. Never sends.
   Every CV must follow **`templates/RESUME-STANDARD.md` (mandatory)** and pass `tools/resume_qa.py` (exit 0) before `ready`. Filename: `Firstname-Lastname-Resume-<Company>.pdf`.
+  Every cover letter follows RESUME-STANDARD §15 (250 to 380 words, one page, resume-matching header from build_docs.py, named addressee when the posting gives one, metrics, interview-request close, banned stock lines, no IELTS) and passes `resume_qa.py --letter` (exit 0). Filename: `Firstname-Lastname-Cover-Letter-<Company>.pdf`.
 - **track** — sync replies → update pipeline → draft responses → scoreboard digest.
 
 Adding a verb requires retiring or merging one.

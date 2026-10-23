@@ -3,9 +3,11 @@
 
 Usage:
   python3 tools/resume_qa.py CV.pdf --title "Posting Title" [--candidate SLUG] [--max-pages 1] [--posting-requires-status] [--json]
-  python3 tools/resume_qa.py --letter Cover-Letter.pdf [--research outbox/<slug>/research.md] [--max-words 180]
-      letter mode: body <= 180 words, no em-dash, no eligibility/sponsorship/PR/citizenship line, and (with --research)
-      FAIL when research.md Confidence is below High and the letter declares or reuses a research sentence (6+ word run).
+  python3 tools/resume_qa.py --letter Cover-Letter.pdf [--research outbox/<slug>/research.md] [--posting posting.md] [--max-words 420]
+      letter mode (RESUME-STANDARD §15): body 250-380 words (WARN < 220 or > 380, FAIL > 420), one page, no em-dash,
+      no banned stock phrases or IELTS, no eligibility/sponsorship/PR/citizenship line, WARN when the posting names a
+      contact but the greeting is generic, and (with --research) FAIL on copied research runs below High confidence
+      (Medium: copied 6+ word runs; Low/Unknown: any declared or copied research sentence).
   python3 tools/resume_qa.py --audit candidates/<slug>      # score every outbox/*/cv-*.pdf and *-Resume-*.pdf (titles from pipeline/)
 
 Exit code 0 = no FAIL (WARN allowed); 1 = at least one FAIL.
@@ -353,7 +355,20 @@ def pipeline_title(cand_dir, slug):
     return t, s
 
 
-LETTER_MAX = 180  # RESUME-STANDARD / tailor skill: cover-letter body at most 180 words
+# RESUME-STANDARD §15 (operator, 2026-10-23): body 250-380 words; WARN below 220 or 381-420; FAIL above 420.
+LETTER_MIN, LETTER_TARGET_MIN, LETTER_TARGET_MAX, LETTER_MAX = 220, 250, 380, 420
+LETTER_CLICHES = [
+    r"\bI am (?:writing to apply|applying) for\b", r"\bI am writing to express\b", r"\bI would welcome the chance\b",
+    r"\bto whom it may concern\b", r"\bdear sir or madam\b", r"\bplease find (?:attached|enclosed)\b",
+    r"\bthank you for your (?:time and )?consideration\b", r"\bteam player\b", r"\bhard[- ]working\b",
+    r"\bgo-getter\b", r"\bthink outside the box\b", r"\bpassionate about\b", r"\bperfect fit\b",
+    r"\bideal candidate\b", r"\bfast-paced environment\b", r"\bstrong work ethic\b", r"\bpositive attitude\b",
+    r"\bI believe I would be\b", r"\bdelve\b", r"\btapestry\b", r"\bleverag(?:e|ing) my\b", r"\bin today's\b",
+    r"\bIELTS\b",   # operator 2026-10-23: never put the IELTS score in letters
+]
+GENERIC_SALUTE = re.compile(r"(?im)^\s*Dear\s+(?:Hiring|Recruit|Selection|Search|Sir|Madam|Team)\b")
+NAMED_CONTACT = re.compile(r"\b(?:Mr|Ms|Mrs|Mx|Dr)\.\s+[A-Z][a-z]+|\b(?:contact|attention|attn:?|to)\s+([A-Z][a-z]+\s+[A-Z][a-z]+)\b|\b([a-z]{3,})@[a-z0-9.-]+\.[a-z]{2,}")
+GENERIC_LOCAL = {"info", "jobs", "careers", "hr", "admin", "office", "hiring", "recruiting", "apply", "smile", "contact", "reception", "hello"}
 
 
 def letter_body(text):
@@ -368,13 +383,38 @@ def research_conf(path):
     return (c.group(1).capitalize() if c else "Unknown"), (s.group(1).strip() if s else ""), t
 
 
-def check_letter(pdf, research=None, max_words=LETTER_MAX):
-    """Cover-letter checks: body words, em-dash, eligibility line, research sentence only at High confidence."""
-    text = joined(pypdf_text(pdf)) if pdf.lower().endswith(".pdf") else open(pdf, encoding="utf-8").read()
+def named_contact(posting_text):
+    """A person named in the posting as the contact (Ms. Ara, erin@...), or None."""
+    for m in NAMED_CONTACT.finditer(posting_text):
+        if m.group(2):
+            if m.group(2).lower() not in GENERIC_LOCAL: return m.group(0)
+        else:
+            return m.group(0)
+    return None
+
+
+def check_letter(pdf, research=None, max_words=LETTER_MAX, posting=None):
+    """Cover-letter checks (RESUME-STANDARD §15): body 250-380 words (WARN <220 or >380, FAIL >420), one page,
+    em-dash, cliche/stock-line bans, eligibility line, named-addressee WARN, research sentence by confidence."""
+    is_pdf = pdf.lower().endswith(".pdf")
+    text = joined(pypdf_text(pdf)) if is_pdf else open(pdf, encoding="utf-8").read()
     body = letter_body(text)
-    R = {}
+    R, warns = {}, []
     n = len(body.split())
-    R["words"] = (n <= max_words, f"{n} body words (max {max_words})")
+    R["words"] = (n <= max_words, f"{n} body words (target {LETTER_TARGET_MIN}-{LETTER_TARGET_MAX}, fail > {max_words})")
+    if n < LETTER_MIN: warns.append(f"words: {n} < {LETTER_MIN}, letter reads as thin (target {LETTER_TARGET_MIN}-{LETTER_TARGET_MAX})")
+    elif n > LETTER_TARGET_MAX and n <= max_words: warns.append(f"words: {n} above target {LETTER_TARGET_MAX}")
+    elif n < LETTER_TARGET_MIN: warns.append(f"words: {n} below target {LETTER_TARGET_MIN}")
+    if is_pdf:
+        from pypdf import PdfReader
+        pages = len(PdfReader(pdf).pages)
+        R["one_page"] = (pages == 1, f"{pages} page(s)")
+    hits = sorted({re.search(c, text, re.I).group(0) for c in LETTER_CLICHES if re.search(c, text, re.I)})
+    R["no_cliche"] = (not hits, f"stock/cliche phrases: {hits}" if hits else "ok: no banned stock phrases")
+    if posting:
+        who = named_contact(open(posting, encoding="utf-8").read())
+        if who and GENERIC_SALUTE.search(text):
+            warns.append(f"addressee: posting names a contact ({who}) but the letter uses a generic greeting")
     R["no_emdash"] = ("\u2014" not in text, f"{text.count(chr(0x2014))} em-dashes")
     st = sorted({re.sub(r"\s+", " ", m.group(0).strip()) for m in STATUS_RE.finditer(text)})
     R["no_status"] = (not st, f"status/eligibility line present {st}" if st else "ok: no status/eligibility line")
@@ -385,11 +425,13 @@ def check_letter(pdf, research=None, max_words=LETTER_MAX):
         rt = clean_posting(re.sub(r"(?is)^.*?## Findings", "", rtxt, count=1))
         rt = re.split(r"(?m)^## (?:Emphasis plan|Use in documents|Profile map)", rt)[0]
         shared = copied_ngrams(body, rt)
-        bad = conf != "High" and (declared or shared)
+        # High: free; Medium: a fresh-worded "why this employer" line is fine, no copied research runs (2026-10-23);
+        # Low/Unknown: no research use at all.
+        bad = (conf == "Medium" and bool(shared)) or (conf not in ("High", "Medium") and (declared or shared))
         R["research_sentence"] = (not bad, (f"research confidence {conf} (< High) but letter uses research: declared={sent!r} shared={shared}"
                                             if bad else f"ok: confidence {conf}; declared={sent or 'none'!r}; shared runs={shared}"))
     fails = [k for k, (ok, _) in R.items() if not ok]
-    return dict(file=pdf, rules={k: dict(ok=ok, detail=d) for k, (ok, d) in R.items()}, fails=fails)
+    return dict(file=pdf, rules={k: dict(ok=ok, detail=d) for k, (ok, d) in R.items()}, fails=fails, warnings=warns)
 
 
 def main():
@@ -398,12 +440,14 @@ def main():
         lp.add_argument("--letter", required=True, help="cover letter PDF (or .txt)")
         lp.add_argument("--research", help="outbox/<slug>/research.md: enables the research-sentence check")
         lp.add_argument("--max-words", type=int, default=LETTER_MAX)
+        lp.add_argument("--posting", help="posting.md: WARN when it names a contact and the greeting is generic")
         lp.add_argument("--json", action="store_true")
         b = lp.parse_args()
-        r = check_letter(b.letter, b.research, b.max_words)
+        r = check_letter(b.letter, b.research, b.max_words, b.posting)
         if b.json: print(json.dumps(r, indent=1))
         else:
             for k, v in r["rules"].items(): print(f"{'PASS' if v['ok'] else 'FAIL':4}  {k:18} {v['detail']}")
+            for w in r["warnings"]: print(f"WARN  {w}")
             print("LETTER", "OK" if not r["fails"] else "FAILED: " + ", ".join(r["fails"]))
         sys.exit(1 if r["fails"] else 0)
     ap = argparse.ArgumentParser()
