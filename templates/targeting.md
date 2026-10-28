@@ -33,11 +33,16 @@
 <!-- Scores use templates/FIT-RUBRIC.md (fit-v1.0, 0-100 only). -->
 - Fit threshold (default 70):
 - Per-lane quotas: none <!-- set only if one lane drowns the others -->
-- Freshness window: 7 days, hard <!-- hard = older postings knock out (K6); soft = scored by P5 only -->
+- Freshness mode: strict <!-- strict = older than window knocks out (K6); soft = scored by P5 only -->
+- Freshness window: 7 days
 - Salary floor (filter only, never typed into forms): NOT SET <!-- K3 fires only when set -->
 - Lane target asks (P3 and salary fields): <!-- e.g. IC $X, Senior/Manager $Y, Director $Z, currency -->
 - Lane modifiers (P1/P4): <!-- e.g. "Lane 2 x2", "evening hours: score down, don't exclude" -->
 - Knockouts beyond the defaults (K1 licences, K5 exclusions):
+
+## Routines
+- Scout: daily 08:00 local <!-- default -->
+- Reply checks: 10:00 and 17:00 local <!-- default -->
 
 ## Channels allowed
 - [x] Email applications (Gmail drafts from candidate's account)
