@@ -37,6 +37,8 @@ pip install -r tools/requirements.txt   # pypdf, pyspellchecker, python-docx, py
 
 **The same layout works for Claude Code, Hermes, and Grok Bot.** Each agent reads `CLAUDE.md` (`AGENTS.md` is only a pointer to it), uses the skills in `.claude/skills/` (`.agents/skills` is a symlink to the same tree), and runs the same `tools/` scripts. Paths are relative to the repo root, so no tool-specific configuration lives in git. Machine-local settings stay in `*.local.*` files, which are ignored.
 
+**Standards:** `STANDARDS.md` lists every standard, where it lives and what enforces it. The structured record is the SQLite DB in `candidates/db/` (mirrored to Turso; credentials in `~/.config/jobby/turso.env`, never in git).
+
 **Commit and pull discipline**
 - `git pull` in both repos **before** a session; commit and push **at the end** of every session, even a small one.
 - System changes (skills, templates, tools, DECISIONS.md) go in the system repo, only in build sessions.

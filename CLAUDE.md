@@ -17,7 +17,7 @@ Work that doesn't move one of these doesn't get built.
 `/intake → /scout → /tailor → /track` (skills in `.claude/skills/`; `.agents/skills` is a symlink to the same tree)
 
 - **intake** — documents first, interview second → `dossier.md` + `targeting.md`.
-- **scout**: sweep channels → dedup → **cheap qualify** (metadata-only fit score) → file opportunities ≥ threshold → QUICK `research.md` (hiring hypothesis, RESUME-STANDARD §14) for each filed opportunity → operator approval digest. Cheap qualify is the cost gate: nothing below threshold gets researched. QUICK research is allowed before approval; DEEP research and tailoring happen only after operator approval; an operator request to draft a CV or letter counts as approval, and DEEP research must finish before drafting (RESUME-STANDARD §14.1).
+- **scout**: sweep channels → dedup → **cheap qualify** (metadata-only fit score) → **Stage B evidence score** (templates/FIT-RUBRIC.md, fit-v1.0, 0-100, logged to the DB) → file opportunities ≥ threshold → QUICK `research.md` (hiring hypothesis, RESUME-STANDARD §14) for each filed opportunity → operator approval digest. Cheap qualify is the cost gate: nothing below threshold gets researched. QUICK research is allowed before approval; DEEP research and tailoring happen only after operator approval; an operator request to draft a CV or letter counts as approval, and DEEP research must finish before drafting (RESUME-STANDARD §14.1).
 - **tailor** (approved opportunities only; a request to draft = approval): DEEP research, completed and recorded before any drafting → writer → judge → deterministic seatbelt → drafts and packs in `outbox/`, Gmail drafts in the candidate's account. Never sends.
   Every CV must follow **`templates/RESUME-STANDARD.md` (mandatory)** and pass `tools/resume_qa.py` (exit 0) before `ready`. Filename: `Firstname-Lastname-Resume-<Company>.pdf`.
   Every cover letter follows RESUME-STANDARD §15 (250 to 380 words, one page, resume-matching header from build_docs.py, named addressee when the posting gives one, metrics, interview-request close, banned stock lines, no IELTS) and passes `resume_qa.py --letter` (exit 0). Filename: `Firstname-Lastname-Cover-Letter-<Company>.pdf`.
@@ -60,9 +60,11 @@ candidates/<slug>/          # gitignored — one per person
   pipeline/                 # one file per opportunity (statuses: discovered → approved → ready → applied → replied → interviewing → offer | closed-*)
   outbox/<slug>/            # CVs, letters, answers.md packs, research.md (§14)
   _ledger.md                # canonical seen + applied ledger (dedup + application tracker source of truth; ## Applied uses the 11-field tracker v2 line, see track skill §0)
-templates/                  # dossier, targeting, opportunity, research blanks, RESUME-STANDARD.md
-tools/                      # resume_qa.py (seatbelt), build_cv_from_template.py (house-style build), research_check.py (research.md lint), pipeline_check.py (research tier and approval dates)
-research/                   # evidence behind RESUME-STANDARD (no PII)
+candidates/db/              # jobby.sqlite (gitignored) = structured system of record: jobs, sightings, fit scores, applications, answers, facts; jobby_db.py CLI, migrations/, DESIGN.md; mirrored to Turso by sync_turso.py (credentials outside the repo)
+templates/                  # dossier, targeting, opportunity, research blanks, RESUME-STANDARD.md, FIT-RUBRIC.md (fit-v1.0 scoring), APPLICATION-OPS.md (forms, answers, logging, routines)
+tools/                      # resume_qa.py (seatbelt), build_cv_from_template.py (house-style build), research_check.py (research.md lint), pipeline_check.py (research tier and approval dates), build_docs.py (CV + letter builds from spec.json), score_check.py (fit-v1.0 score lint + arithmetic)
+research/                   # evidence behind RESUME-STANDARD and FIT-RUBRIC (no PII)
+STANDARDS.md                # index: every standard, where it lives, how it is enforced
 ```
 
 ## What we do not build (without the operator editing this file)
