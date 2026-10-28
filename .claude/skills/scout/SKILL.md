@@ -24,7 +24,9 @@ Slug = `<company>-<role>`, normalized. If it appears in `_ledger.md` or `pipelin
 Score 0–100 from posting metadata alone (title, company, location, comp, seniority, top requirements) against dossier + targeting. **No DEEP research at this stage**: DEEP happens only after operator approval, in tailor. The QUICK pass in 3b is allowed before approval, on filed opportunities only.
 - Hard-constraint violation (work auth, location, salary floor, exclusion) → one `## Seen` ledger line (`date | company | role | source | score | reason`), no file.
 - Below threshold → same ledger line with the score.
-- At/above threshold → create `pipeline/YYYY-MM-DD-<slug>.md` from `templates/opportunity.md`, status `discovered`, with: score, why-this-fits (≤3 bullets), risks/unknowns, apply-channel analysis, deadline.
+- Stage A >= 55 and not knocked out → **Stage B evidence score** (`templates/FIT-RUBRIC.md` §4, mandatory, fit-v1.0): fetch the posting, build the requirement map with citations, run `tools/score_check.py`, record with `candidates/db/jobby_db.py score add`. Stage B, not Stage A, decides filing. Scores 67-73 are borderline: a second scorer re-scores first. 55-69 (maybe) gets a ledger line and a digest "near misses" row if E1 >= 30.
+- Every sighting is logged in the DB too (`jobby_db.py add-job` + `sighting`), then `db/sync_turso.py push`.
+- At/above threshold (Stage B) → create `pipeline/YYYY-MM-DD-<slug>.md` from `templates/opportunity.md`, status `discovered`, with: `Fit score: <n>/100 (fit-v1.0, conf <c>)`, the requirement map, why-this-fits (≤3 bullets), risks/unknowns, apply-channel analysis, deadline.
 
 ## 3b. QUICK company and role research (filed opportunities only, before approval, RESUME-STANDARD §14)
 Runs only on opportunities that cleared cheap qualify and got a pipeline file, so the cost gate stays intact. Create `outbox/<opportunity-slug>/research.md` from `templates/research.md`, tier QUICK:

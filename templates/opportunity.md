@@ -5,7 +5,7 @@
 - **Posting:** <url> (posted <date>, deadline <date/none>)
 - **Location:** <city / remote>
 - **Comp:** <listed or "not listed">
-- **Fit score:** <n>/100
+- **Fit score:** <n>/100 (fit-v1.0, conf <c>, band <apply|maybe|skip|knockout>, job_scores id <id>)
 - **Approved on:** n/a <!-- YYYY-MM-DD when the operator approved; n/a until then -->
 - **Researched tier:** none <!-- none | quick | deep. Matches the Tier in outbox/<slug>/research.md. -->
 - **Deep researched on:** n/a <!-- YYYY-MM-DD when DEEP ran; must be on or after Approved on (RESUME-STANDARD §14.1). Check: python3 tools/pipeline_check.py <this file> -->
@@ -25,3 +25,6 @@
 
 ## Activity log
 - <date> — discovered, scored <n>
+
+## Requirement map
+<!-- fit-v1.0 Stage B: requirement | must/nice | grade | citation (path:line or fact:id). Tailor reuses this as the profile_map. -->
