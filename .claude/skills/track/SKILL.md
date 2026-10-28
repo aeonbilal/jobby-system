@@ -17,9 +17,11 @@ Every application touch is ONE line in the candidate's `_ledger.md` under `## Ap
 - `status` (tracker vocabulary): `submitted` | `pending account approval` | `scheduled email` | `replied` | `interview` | `rejected`.
 - `last reply`: `-` or `YYYY-MM-DD <sender>: <one-line gist>`. `next follow-up`: `YYYY-MM-DD` (default applied + 14 days) plus an optional note in parentheses.
 - Edit the line in place when status changes. Channel escalations add a new line. Lines above the tracker v2 marker are legacy 4-column lines; leave them alone.
+- Mirror every change into the DB: `candidates/db/jobby_db.py status <app_id> <status> --actor agent --evidence ...` (or `submitted`), then `db/sync_turso.py push`. The DB and the ledger must agree; `jobby_db.py verify` checks the DB.
 - Mirror the change into the pipeline file: `Status:` mapped as submitted→applied, pending account approval/scheduled email→ready, replied→replied, interview→interviewing, rejected→closed-rejected. Add one activity-log line there too. Run `tools/pipeline_check.py`.
 
 ## 0.1 Logging an email reply (procedure)
+Runs as a scheduled routine twice a day, around 10:00 and 17:00 ET, for every active candidate (templates/APPLICATION-OPS.md).
 1. Search the candidate's Gmail for messages received since the last run (`newer_than:2d`, excluding sent mail).
 2. Match each reply to a ledger line by sender domain against the channel/employer domains (pipeline `Employer domains`), then by company or role in the subject/body, then by confirmation ref. If nothing matches, flag it in the digest and don't guess.
 3. Set `last reply` to `YYYY-MM-DD <sender address>: <one-line gist>`. Don't copy the body; minimise data.
