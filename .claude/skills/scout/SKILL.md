@@ -26,6 +26,7 @@ Score 0–100 from posting metadata alone (title, company, location, comp, senio
 - Below threshold → same ledger line with the score.
 - Stage A >= 55 and not knocked out → **Stage B evidence score** (`templates/FIT-RUBRIC.md` §5, mandatory, fit-v1.0): fetch the posting, build the requirement map with citations, run `tools/score_check.py`, record with `candidates/db/jobby_db.py score add`. Stage B, not Stage A, decides filing. Scores 67-73 are borderline: a second scorer re-scores first. 55-69 (maybe) gets a ledger line and a digest "near misses" row if E1 >= 30.
 - Every sighting is logged in the DB too (`jobby_db.py add-job` + `sighting`), then `db/sync_turso.py push`.
+- Job URLs must be the exact posting page (viewjob, /job/<id>, ATS posting). Aggregator search pages (SimplyHired /search, Indeed /jobs?q=, LinkedIn /jobs/search, Job Bank /jobsearch/jobsearch, Google search) are rejected by `add-job`: their normalized form drops the query, so two different searches collide and merge unrelated jobs. If only a search page is known, find the exact posting first, or add the job without `--url` and put the search link in notes.
 - At/above threshold (Stage B) → create `pipeline/YYYY-MM-DD-<slug>.md` from `templates/opportunity.md`, status `discovered`, with: `Fit score: <n>/100 (fit-v1.0, conf <c>)`, the requirement map, why-this-fits (≤3 bullets), risks/unknowns, apply-channel analysis, deadline.
 
 ## 3b. QUICK company and role research (filed opportunities only, before approval, RESUME-STANDARD §14)
