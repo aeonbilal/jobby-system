@@ -80,7 +80,9 @@ def build_letter(L, out_docx, spec=None, template=None):
         text(line, after=0)
     text(f"Re: {L['re']}", after=12, bold=True)
     text(L.get("salutation", "Dear Hiring Manager,"), after=10)
-    for para in L["paragraphs"]: text(para, after=10)
+    for i, para in enumerate(L["paragraphs"]):
+        # optional: some postings ask applicants to bold the first line of the letter
+        text(para, after=10, bold=(i == 0 and bool(L.get("bold_first_paragraph"))))
     so = L.get("signoff", ["Sincerely,", L["sender"].split(",")[0]])
     text(so[0], after=0)
     text("", after=0); text("", after=0)          # signature space
