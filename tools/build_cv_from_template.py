@@ -31,6 +31,29 @@ from docx.text.paragraph import Paragraph
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 
 
+def dedupe_bullets(bullets, *, role=None):
+    """Keep the first copy of each experience bullet; drop later exact duplicates.
+
+    Some pack specs repeated the same Town Center bullet (the appointment-book
+    line) in a four-slot list. Without this guard the PDF printed it twice.
+    Comparison is on whitespace-normalized text.
+    """
+    src = list(bullets or [])
+    seen = set()
+    out = []
+    for b in src:
+        key = " ".join(str(b).split())
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        out.append(b)
+    dropped = len(src) - len(out)
+    if dropped:
+        label = role or "role"
+        print(f"warning: dropped {dropped} duplicate bullet(s) in {label}", file=sys.stderr)
+    return out
+
+
 def detect(P):
     m = dict(name=0, head=1, contact=2)
     for i, p in enumerate(P):
@@ -76,7 +99,7 @@ def main():
     add("sec", "Experience")
     for r in S["roles"]:
         add("role", r["employer"], "   ·   " + r["location"], "\t" + r["dates"]); add("title", r["title"])
-        for b in r["bullets"]: add("bul", b)
+        for b in dedupe_bullets(r.get("bullets"), role=r.get("employer")): add("bul", b)
     if S.get("earlier") and "earlier" in T: add("earlier", *S["earlier"])
     add("sec", "Education & Credentials")
     for t in S["education"]: add("edu", t)
