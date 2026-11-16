@@ -4,7 +4,7 @@ Adopted 2026-10-28 from operator instructions given in chat 2026-10-20 to 2026-1
 
 ## Gate
 - Nothing is submitted without the operator's approval of that job (digest approval or an explicit "apply"). CLAUDE.md hard rule 1 governs.
-- **Pending constitution amendment:** on 2026-10-23 the operator directed that, after approval of a job, the agent may complete and submit the portal application itself and report any guessed answers afterwards. This conflicts with hard rule 1 ("never sends or submits") and the 2026-10-20 decision. Until Bilal edits CLAUDE.md, treat it as operator-directed per job: submit only when he has said so for that job, and log `submitted_by=agent` plus the guessed answers.
+- **Pending constitution amendment:** on 2026-10-23 the operator directed that, after approval of a job, the agent may complete and submit the portal application itself and report any guessed answers afterwards. This conflicts with hard rule 1 ("never sends or submits") and the 2026-10-20 decision. Until the operator amends CLAUDE.md, treat it as operator-directed per job: submit only when the operator has said so for that job, and log `submitted_by=agent` plus the guessed answers.
 
 ## Form answers
 - Answer from `candidate_facts`, then logged answers (`jobby_db.py search-answers`), then the dossier. Log every answer given (`jobby_db.py answer`), marking guesses `answered_by=agent_default` and reporting them to the operator the same day.

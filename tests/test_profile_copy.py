@@ -7,7 +7,7 @@ POST = "Review treatment plans with patients; explain fees, insurance coverage a
 # copied: 6+ consecutive posting words -> must be flagged
 assert copied_ngrams("Coordinator who will explain fees, insurance coverage and payment options daily.", POST) == ["explain fees insurance coverage and payment options"]
 # paraphrased, sharing only single keywords / short terms -> must pass
-assert copied_ngrams("Dentist-trained coordinator who walks patients through treatment plans and tracks unfinished treatment.", POST) == []
+assert copied_ngrams("Clinic-trained coordinator who walks patients through treatment plans and tracks unfinished treatment.", POST) == []
 # 5-word overlap is below the threshold -> passes
 assert copied_ngrams("Able to follow up on pending files.", POST) == []
 # HTML source comments in posting.md are ignored

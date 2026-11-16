@@ -9,10 +9,10 @@ Generic: no candidate data lives here. Everything comes from <candidate>/outbox/
 fields read by build_cv_from_template.py plus:
   "files":  {"stem": "Firstname-Lastname", "company": "Company-Code",
              "template": "research/demo/House-Style.docx"}            # template path relative to the candidate folder
-  "letter": {"sender": "Firstname Lastname, BDS",
-             "contact": ["City, ON  ·  +1 (416) 555-0123", "name@example.com  ·  linkedin.com/in/x"],  # one line each, never wraps
+  "letter": {"sender": "Firstname Lastname",
+             "contact": ["City, REGION  ·  +1 (555) 555-0100", "name@example.com  ·  linkedin.com/in/example"],  # one line each, never wraps
              "date": "October 22, 2026", "recipient": ["Hiring Team", "Employer"], "re": "Posting Title",
-             "address": ["123 Street, Suite 4", "Toronto, ON  M5T 3A9"],   # employer address lines (2026-10-23)
+             "address": ["100 Example Street", "City, REGION  00000"],   # employer address lines (2026-10-23)
              "salutation": "Dear Ms. Lastname,", "paragraphs": ["..."], "signoff": ["Sincerely,", "Firstname Lastname"]}
   The letter header reuses the CV template's name/headline/contact paragraphs (spec "name", "headline", "contact_prefix")
   so it matches the resume; 1 inch margins; PDF author/title from spec "author". Body 250-380 words (RESUME-STANDARD §15).

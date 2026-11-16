@@ -43,7 +43,7 @@ def test_named_addressee_warning():
     assert any("addressee" in w for w in check_letter(_w(OK), posting=post)["warnings"])
     assert not any("addressee" in w for w in check_letter(_w(OK.replace("Dear Hiring Team", "Dear Ms. Ara")), posting=post)["warnings"])
     assert not any("addressee" in w for w in check_letter(_w(OK), posting=_w("Send to careers@x.com"))["warnings"])
-    assert any("addressee" in w for w in check_letter(_w(OK), posting=_w("Send to erin@kmidwives.ca"))["warnings"])
+    assert any("addressee" in w for w in check_letter(_w(OK), posting=_w("Send to erin@example.org"))["warnings"])
 
 def test_clean_posting_strips_urls_and_comments():
     t = clean_posting("Book patients <!-- captured from https://x.y/z today --> see https://www.a.com/b?c=d and www.e.ca now")

@@ -8,7 +8,7 @@ Location: `research/` is this repo's existing home for standards-under-review (c
 
 ## 0. The existing rubric (the base; not replaced)
 
-The scoring system already lives in the system repo `aeonbilal/jobby-system` (`/workspace/jobby/repos/job-application-system`):
+The scoring system already lives in this engine repo:
 
 1. **`.claude/skills/scout/SKILL.md` §3 "Cheap qualify — the cost gate (metadata only)"** (mirrored in `.agents/skills/scout/SKILL.md`):
    > Score 0–100 from posting metadata alone (title, company, location, comp, seniority, top requirements) against dossier + targeting. ...
@@ -19,24 +19,24 @@ The scoring system already lives in the system repo `aeonbilal/jobby-system` (`/
 2. **Threshold 70.** `DECISIONS.md` 2026-07-08 (founding): "scout files everything at/above the candidate's fit threshold (default 70) and nothing below it". `CLAUDE.md` hard rule 3 "Threshold over quota". `templates/targeting.md` "## Scoring & volume": `Fit threshold (default 70)`, `Freshness window: 7 days <!-- ignore postings older than this -->`.
 3. **Evidence method already exists, for profiles:** `templates/RESUME-STANDARD.md` §3.5 Venn rule: "(1) extract the posting's top requirements (usually 4–8), ranked by weight (must-have / required first, then repeated or first-listed duties, then assets); (2) map each to dossier evidence with its provenance, or mark it NO EVIDENCE; ... (4) store the mapping as a `profile_map` list ... `{rank, requirement, evidence, source, used}`." Unmet requirements go under `## Gaps` (DECISIONS 2026-10-20).
 4. **Pay check:** RESUME-STANDARD §14.4 / scout §3b: posted range vs the candidate's own floor; BELOW-FLOOR is a hard-constraint signal; missing range = UNKNOWN, no red flag unless pay law applies.
-5. **DB storage:** candidates repo `db/DESIGN.md` L106-107 and `db/migrations/0001_init.sql`: `job_sightings.fit_raw` (verbatim) + `fit_score` 0-100 ("Bilal 0-5 x20"), verdict enum `shortlist|skip|reject|closed|duplicate|applied|unscored`.
-6. Per-candidate settings: `haiqa-nasir/targeting.md` L49 "Fit threshold: 70 · ... Freshness ≤7 days (gigs ≤14)", hard rubric L100. `bilal-syed/targeting.md` has **no** `## Scoring & volume` section (no threshold, freshness or floor; dossier says "Salary floor: none").
+5. **DB storage:** private tracker `db/DESIGN.md` and `db/migrations/0001_init.sql`: `job_sightings.fit_raw` (verbatim) + `fit_score` 0-100 (legacy 1-5 scores stored times 20), verdict enum `shortlist|skip|reject|closed|duplicate|applied|unscored`.
+6. Per-candidate settings live in `candidates/<slug>/targeting.md`. One illustrative profile had a threshold and a hard freshness window. Another had no `## Scoring & volume` section (no threshold, freshness, or floor).
 
 **Summary of the existing rubric:** one 0-100 holistic score from metadata, judged against dossier + targeting; hard constraints (auth, location, floor, exclusion) are knockouts; threshold 70 decides file vs ledger; freshness 7 days; operator approves the digest. What it does NOT define: dimensions, weights, how "top requirements" are graded, evidence citations, confidence, version, or multi-agent storage. That is the only gap this proposal fills.
 
 ## 1. Where the 2026-10-28 ad-hoc 1-5 scores deviated
 
-The 9 Hark jobs (ids 416-424) were scored 1-5 and stored as `fit_raw '1'..'5'`, `fit_score` x20.
+A batch of jobs was scored 1-5 and stored as `fit_raw '1'..'5'`, `fit_score` times 20.
 
 | Deviation | Existing rule | What happened |
 |---|---|---|
 | Scale | 0-100 (scout §3, opportunity.md "Fit score <n>/100") | 1-5, so only 20-point steps (20/40/60/80/100). `targeting.md` also has "Fit 6/10", "8/10" (a third scale). |
-| Threshold | 70 | Shortlist cut at 60; Achievers, Intuit, Modaxo (60) were shortlisted below threshold. |
-| Freshness | 7-day window | Modaxo (posted 2026-06-15) and Intuit (2026-09-22) scored 60 and shortlisted. Air (2026-10-17) is 11 days old. |
-| Evidence | Top requirements vs dossier (Venn method) | Gut call from title/pay; JDs not read. Air got 5/5 = 100 though its first responsibility is Salesforce-centred architecture + CPQ, which Bilal has not administered. |
+| Threshold | 70 | Shortlist cut at 60; jobs scoring 60 were shortlisted below threshold. |
+| Freshness | 7-day window | Postings older than the window were scored and shortlisted, including one 11 days old. |
+| Evidence | Top requirements vs dossier (Venn method) | Gut call from title and pay; JDs not read. One job scored 5/5 = 100 though its first responsibility was a core system the candidate had not administered. |
 | Records | Ledger line with reason; pipeline file with why/risks | No reason, no why-fits, no risks stored in DB rows. |
-| Data | — | Ideogram stored `work_mode='onsite'`; the live posting says Hybrid, Canada (Eastern). |
-| Non-fit factors mixed in | Cooldowns are an apply-channel issue | 1Password's Ashby cooldown influenced the advice; fine as advice, but must not change the score. |
+| Data | — | One job stored `work_mode='onsite'`; the live posting said hybrid. |
+| Non-fit factors mixed in | Cooldowns are an apply-channel issue | An ATS cooldown influenced the advice; fine as advice, but must not change the score. |
 
 ## 2. Proposed extension: same 0-100, same threshold, now decomposed
 
@@ -56,35 +56,35 @@ Keep scout §3 intact as **Stage A (cheap qualify, metadata)**. Add **Stage B (e
 | P1 Lane/title match | 12 | title in confirmed target titles or a targeting.md lane (12) | adjacent lane (6) | outside all lanes (0-2) |
 | P2 Seniority | 8 | JD years and level within candidate's (8) | 1 level or <=2 yrs off either way (4) | 2+ levels off (0) |
 | P3 Pay | 8 | range max >= candidate target ask (8) | max within 15% under target (4) | below that (1); unknown = 4 |
-| P4 Location / mode | 7 | Toronto onsite/hybrid or remote-Canada (7) | GTA commute >1 h or hybrid 4+ days (4) | — (non-Canada is a knockout) |
+| P4 Location / mode | 7 | onsite/hybrid in the target area, or remote inside the target jurisdiction (7) | beyond the commute rule or more onsite days than targeting allows (4) | — (outside the target jurisdiction is a knockout) |
 | P5 Freshness / open | 5 | posted <=7 days, open (5) | 8-21 days (3) ; 22-45 (1) | >45 days (0); unknown date but live page = 2.5 |
 
-Work authorisation is a knockout, not a weighted dim (Bilal: PR, no sponsorship; Haiqa per her dossier).
+Work authorisation is a knockout, not a weighted dim. Read it from the candidate's dossier.
 
 ### 2.2 Knockouts (existing hard constraints, made explicit)
 Score is still computed for the record, but `band = knockout` and the job never files:
-K1 required licence, clearance, designation or degree the candidate lacks (e.g., Haiqa's RCDSO-gated roles, a CPA).
-K2 location outside Canada / not remote-Canada, or commute beyond candidate rule (Haiqa: >1 h one-way unless onsite <=2 days/wk).
-K3 pay ceiling below the candidate's hard floor in targeting.md (Bilal: none set today, so K3 never fires for him; Haiqa: $20/hr, $42k).
+K1 required licence, clearance, designation or degree the candidate lacks (for example a regulated licence, or a CPA).
+K2 location outside the target jurisdiction, or not remote there, or a commute beyond the rule in targeting.md.
+K3 pay ceiling below the candidate's hard floor in targeting.md. K3 never fires when the floor is NOT SET.
 K4 work authorisation or sponsorship mismatch.
 K5 targeting exclusion list, or posting closed/404.
-K6 freshness older than the candidate's freshness window, ONLY if targeting.md sets it as hard (proposal: Bilal = soft, scored via P5; Haiqa = hard 7/14 days as today).
+K6 freshness older than the candidate's freshness window, ONLY if targeting.md sets it as hard (freshness may be soft, scored via P5, or hard; that choice is per candidate, not a system default).
 Soft knockout (cap total at 55, band maybe-at-best): a must-have that is a portfolio or public body of work the candidate cannot show (e.g., "strong creative portfolio").
 
 ### 2.3 Deterministic procedure (Stage B)
 1. **Fetch** the live posting; save the text to `outbox/<slug>/posting.md` (existing convention) or set `jobs.description_path`. If unreachable, Stage A only, confidence capped at 0.4.
 2. **Extract requirements** as atomic items (one skill/tool/experience each; split "Python and SQL" into one item only if the JD treats them separately). Sources, in order: Requirements / Qualifications / "What we're looking for"; then the first 3 responsibilities if they name a tool or system (the Venn rule's "first-listed duties").
 3. **Classify:**
-   - MUST: under Required/Minimum/Must/"You have"; any "N+ years"; a system named as the centre of the role ("with Salesforce at its center"); anything with "required"/"must".
+   - MUST: under Required/Minimum/Must/"You have"; any "N+ years"; a system named as the centre of the role ("with the named system at its center"); anything with "required"/"must".
    - NICE: Preferred/Bonus/Nice to have/"a plus"/"familiarity with"/"exposure to"; responsibilities not promoted in step 2.
    - Ambiguous headings ("What we're looking for" with no split): all MUST, but cap MUST at 10 items, the remainder NICE (first-listed stay MUST).
-4. **Grade** each requirement against the evidence sources, in this priority: confirmed `candidate_facts` rows, master resume (`outbox/_master/build.py`), approved bullet files (`openmao-bullets.md`), dossier lines tagged CONFIRMED/[known]. Unverified dossier lines cannot earn more than 0.5.
+4. **Grade** each requirement against the evidence sources, in this priority: confirmed `candidate_facts` rows, the master resume (`candidates/<slug>/outbox/_master/build.py`), approved bullet files in that candidate's folder, dossier lines tagged CONFIRMED. Unverified dossier lines cannot earn more than 0.5.
    - 1.0: directly evidenced, same tool/skill, at the asked depth or years.
-   - 0.5: adjacent tool (HubSpot for Salesforce-admin), basic level of the named tool, or fewer years than asked, or evidence only in unverified dossier lines.
-   - 0: no evidence, or a listed gap (Bilal: Power BI, Gong, cybersecurity SaaS, Salesforce/Close/Customer.io admin, Apex).
+   - 0.5: an adjacent tool, a basic level of the named tool, fewer years than asked, or evidence only in unverified dossier lines.
+   - 0: no evidence, or a gap the dossier already lists. Do not invent the gap list in the rubric.
    Every grade > 0 MUST carry a citation `path:line` or `fact:<id>`; a grade without a citation is recorded as 0.
 5. **Practical dims** from `jobs` columns plus the posting; never from memory.
-6. **Missing data:** pay unknown = P3 4/8 and lower confidence; date unknown = P5 2.5; mode unknown = P4 7 if Toronto, else 4. Missing data never knocks out.
+6. **Missing data:** pay unknown = P3 4/8 and lower confidence; date unknown = P5 2.5; mode unknown = P4 7 if the posting is inside the target area, else 4. Missing data never knocks out.
 7. **Total** = round(E1+E2+P1..P5). Apply knockouts and soft cap. Assign band.
 8. **Write** one append-only `job_scores` row (section 5) and the opportunity file's `Fit score` line; keep `job_sightings.fit_score` in sync for back-compat.
 
@@ -99,62 +99,62 @@ Soft knockout (cap total at 55, band maybe-at-best): a must-have that is a portf
 ### 2.5 Confidence (0-1) and version
 confidence = 0.4 x (posting text fetched ? 1 : 0) + 0.3 x (share of requirements whose grade has a citation or explicit gap fact) + 0.3 x (share of P1-P5 from known data, not defaults). Scores with confidence < 0.6 are labelled provisional in the digest. Version string `fit-v1.0`; bump minor for wording/procedure fixes, major for weight changes. Rows are never rescored in place; a new version means a new row.
 
-## 3. Worked examples (Bilal, candidate 1)
+## 3. Worked examples (Candidate A)
 
-Evidence keys: `M:L26/28/33/40` = `bilal-syed/outbox/_master/build.py` lines; `OM:bN` = `bilal-syed/openmao-bullets.md` bullet N; `F:` = confirmed facts in the operator brief (should become `candidate_facts` ids); `D:conf` = dossier.md CONFIRMED section.
+These examples are fictional. They keep the arithmetic of the original calibration and do not describe a real person. Evidence keys are `path:line` into `candidates/<slug>/...` or `fact:<id>`.
 
-### 3.1 Air, Senior Manager, GTM Systems (job 417). Old: 5/5 = 100
-Posting: jobs.lererhippeau.com, fetched 2026-10-28. MUST (8):
+### 3.1 Northwind, Senior Manager, Systems. Old ad-hoc score: 100
+Illustrative posting, fetched the day of scoring. MUST (8):
 | Requirement | Grade | Evidence |
 |---|---|---|
-| 5+ yrs RevOps/GTM Eng/Business Systems incl. CRM product owner | 0.5 | F: 3+ yrs MOps/RevOps/GTM, HubSpot admin |
-| Owned a systems roadmap and delivered | 0.5 | OM:b1 (own project), D:conf Cogency founder |
-| Systems architecture: data models, integrations, dependencies | 1 | M:L33 ELT pipelines, M:L40 GTM infrastructure |
-| Read Apex, SQL, API payloads | 0.5 | M:L27 SQL, REST APIs; gap: Apex |
-| Builds with Claude Code, shipped AI workflows/agents | 1 | M:L27 Claude Code, OM:b2 |
-| Turns business requirements into systems logic | 0.5 | F: managed BDR team; no cited requirements doc |
-| Salesforce architecture at the centre (object model, permissions, release governance) | 0 | gap: Salesforce basic only |
-| CPQ / deal desk builds | 0 | no evidence |
-E1 = 45 x 4/8 = 22.5. NICE (3): attribution + speed-to-lead 1 (F: lead scoring and routing); change mgmt/enablement 0.5 (F: BDR team); PLG motion 0. E2 = 15 x 1.5/3 = 7.5.
-P1 12 (GTM systems = confirmed lane) · P2 4 (founding Senior Manager, 5+ yrs vs 3+) · P3 8 ($138-205K covers target) · P4 7 (Toronto hybrid 3 d) · P5 3 (11 days).
-**Total 64, band maybe, confidence 0.9.** The Salesforce/CPQ core pulls it below 70; ad-hoc 100 overstated it by 36.
+| 5+ years in the lane, including owning the core system | 0.5 | fact:1 (fewer years than asked) |
+| Owned a roadmap and delivered it | 0.5 | candidates/<slug>/dossier.md:40 |
+| Systems architecture: data models, integrations, dependencies | 1 | candidates/<slug>/outbox/_master/build.py:33 |
+| Read the core system's language, SQL, and API payloads | 0.5 | build.py:27 lists SQL and APIs; the core language is a gap |
+| Shipped automation and agent workflows | 1 | candidates/<slug>/dossier.md:26 |
+| Turns business requirements into systems logic | 0.5 | fact:2; no cited requirements document |
+| Core system at the centre of the role | 0 | gap recorded in the dossier |
+| Pricing-tool or deal-desk builds | 0 | no evidence |
+E1 = 45 x 4/8 = 22.5. NICE (3): one evidenced at 1, one adjacent at 0.5, one at 0. E2 = 15 x 1.5/3 = 7.5.
+P1 12 (title is a confirmed lane) · P2 4 (level is one step off) · P3 8 (posted max covers the lane ask in targeting.md) · P4 7 (inside the location rule) · P5 3 (11 days).
+**Total 64, band maybe, confidence 0.9.** The unmet core system pulls it below 70. The ad-hoc 100 overstated it.
 
-### 3.2 Ideogram, Creative Technologist (job 418). Old: 1/5 = 20
-Posting: jobs.ashbyhq.com, fetched 2026-10-28 (Hybrid, Canada Eastern; DB says onsite, fix). "What we're looking for" has no split: 11 items MUST.
+### 3.2 Pixel Co, Creative Technologist. Old ad-hoc score: 20
+"What we're looking for" has no split: 11 items MUST.
 | Requirement | Grade | Evidence |
 |---|---|---|
-| Exceptional visual taste (design, typography) | 0 | none |
-| AI-native: agents and automation in marketing workflows | 1 | OM:b1-b2, M:L26 |
-| Builder, concept to launch | 1 | D:conf Cogency founder, OM:b1 |
-| Strong creative portfolio | 0 | none (soft knockout) |
-| Copywriting and storytelling | 0.5 | Whiskit growth (D:conf), no writing samples cited |
-| Technical fluency in design/dev/automation tools | 1 | M:L27 |
-| Growth mindset, measure and improve | 0.5 | dossier Whiskit conversion 3.4%->6.8% (unverified, capped at 0.5) |
-| Product intuition | 0.5 | OM:b5 diagnostics |
-| Startup mentality | 1 | D:conf Nootra co-founder |
-| Visual AI tool familiarity | 0 | none |
-| Social fluency, personal channel | 0 | none |
-E1 = 45 x 5.5/11 = 22.5. NICE (8): front-end 0.5 (M:L27 TypeScript, Vercel); Claude Code/n8n 1 (M:L26-27); growth/SEO/analytics/CRO 1 (M:L28 GA4); motion 0; AI product marketing 0; creator communities 0; audience 0; brand social 0. E2 = 15 x 2.5/8 = 4.7.
-P1 2 (no lane) · P2 6 · P3 4 (unknown) · P4 7 · P5 2.5 (date unknown).
-Raw 49; soft cap 55 not binding. **Total 49, band skip, confidence 0.8.**
+| Exceptional visual taste | 0 | none |
+| Automation in the workflow | 1 | candidates/<slug>/dossier.md:26 |
+| Builder, concept to launch | 1 | candidates/<slug>/dossier.md:40 |
+| Strong public portfolio | 0 | none (soft knockout) |
+| Writing samples | 0.5 | unverified dossier line, capped at 0.5 |
+| Technical fluency in the named tools | 1 | candidates/<slug>/outbox/_master/build.py:27 |
+| Measure and improve | 0.5 | unverified, capped at 0.5 |
+| Product intuition | 0.5 | candidates/<slug>/dossier.md:50 |
+| Startup experience | 1 | candidates/<slug>/dossier.md:12 |
+| Visual-tool familiarity | 0 | none |
+| A personal public channel | 0 | none |
+E1 = 45 x 5.5/11 = 22.5. NICE (8) sum to 2.5. E2 = 15 x 2.5/8 = 4.7.
+P1 2 (no lane) · P2 6 · P3 4 (pay unknown) · P4 7 · P5 2.5 (date unknown).
+Raw 49; soft cap 55 not binding. **Total 49, band skip, confidence 0.8.** P2 = 6 is off the allowed scale (see the QA audit).
 
-### 3.3 SPS Commerce, GTM Engineer (job 414, applied 2026-10-28). Old: 82
-Posting: `bilal-syed/outbox/sps-commerce-gtm-engineer/posting.md`. MUST (7):
+### 3.3 Harbor, Systems Engineer (already applied in the illustration). Old score: 82
+Posting: `candidates/<slug>/outbox/harbor-systems-engineer/posting.md`. MUST (7):
 | Requirement | Grade | Evidence |
 |---|---|---|
-| 5+ yrs GTM eng/RevOps/MOps in SaaS | 0.5 | F: 3+ yrs; not SaaS |
-| Python and SQL | 1 | F: SQL/Python 4+ yrs; M:L27 |
-| Workflow automation (Zapier, n8n) | 1 | M:L26 n8n; F: Zapier, Make |
-| Data modelling, ETL/ELT | 1 | M:L33 |
-| Working knowledge of Salesforce | 0.5 | F: Salesforce basic |
-| GTM processes: pipeline creation, MQL to sales handoff | 1 | M:L40; F: lead routing, BDR team |
-| Cross-functional delivery with measurable outcomes | 0.5 | M:L33 (96% latency cut is technical, not GTM outcome) |
-E1 = 45 x 5.5/7 = 35.4. NICE (4): Clay/ZoomInfo 1 (M:L28); AI/LLM tooling 1 (OM:b1); Outreach/6sense/Gong 0 (gap Gong); technical bachelor's 1 (D:conf GIKI). E2 = 15 x 3/4 = 11.3.
-P1 12 (GTM Engineer is a confirmed title) · P2 6 (IC under direction; 5+ yrs asked) · P3 4 ($100.3-130K CAD; max 4% under the $135K ask) · P4 7 (remote Ontario) · P5 1 (posted 2026-09-16, 42 days).
-**Total 77, band apply, confidence 0.95.** Consistent with the 82 it was applied on.
+| 5+ years in the lane, in the stated industry | 0.5 | fact:1; industry not evidenced |
+| Two named data tools | 1 | fact:3; the citation must cover both tools |
+| Workflow automation | 1 | candidates/<slug>/outbox/_master/build.py:26 |
+| Data modelling | 1 | candidates/<slug>/outbox/_master/build.py:33 |
+| Working knowledge of the core system | 0.5 | fact:4 (basic only) |
+| The lane's handoff process | 1 | candidates/<slug>/outbox/_master/build.py:40 |
+| Cross-functional delivery with a measurable outcome | 0.5 | the cited result is technical, not the outcome asked |
+E1 = 45 x 5.5/7 = 35.4. NICE (4) sum to 3. E2 = 15 x 3/4 = 11.3.
+P1 12 (title is confirmed) · P2 6 (off scale) · P3 4 (posted max is slightly under the lane ask) · P4 7 (remote inside the target jurisdiction) · P5 1 (42 days).
+**Total 77, band apply, confidence 0.95.**
 
-## 4. Haiqa (candidate 2)
-Same formula. Her targeting.md keeps K3 floor $20/hr/$42k, K2 commute rule, K6 freshness hard 7 (gigs 14), K1 licence gates. Her `judge-rubric-facts.md` and dossier are her evidence sources; P1 uses her six lanes.
+## 4. Candidate B
+Same formula. Candidate B's `candidates/<slug>/targeting.md` may set a pay floor, a commute rule, hard freshness, lane modifiers, and licence knockouts (K1). Evidence is that candidate's dossier and `candidate_facts`. Do not copy another candidate's modifiers into the rubric. Clinical or admin postings that are long soft-skill lists still follow the 10-item MUST cap: generic soft skills are NICE unless the posting says required.
 
 ## 5. Proposed DB design (candidates repo, migration 0002; Turso-safe)
 
@@ -197,17 +197,17 @@ Sync (`db/sync_turso.py`): for `job_scores`, never push-replace; do `INSERT OR I
 
 ## 6. Standardisation plan (after QA)
 - scout SKILL §3 (+ `.agents` mirror): add Stage B, dims, knockouts, citation rule, write to `job_scores`.
-- `templates/targeting.md` "Scoring & volume": add floor, freshness hard/soft, target ask, lanes for P1. Fill `bilal-syed/targeting.md` (currently missing).
+- `templates/targeting.md` "Scoring & volume": floor, freshness hard/soft, target ask, lanes for P1. Each `candidates/<slug>/targeting.md` must have that block. A missing block leaves K6 and P3 undefined.
 - `templates/opportunity.md`: `Fit score: <n>/100 (fit-v1.0, conf <c>)` + `## Requirement map` (reuses the Venn `profile_map`, so tailor gets it free).
 - DECISIONS.md entry; candidates repo `db/DESIGN.md`, migration 0002, `jobby_db.py score` command and tests.
 - Rescore open shortlist (416-424) with Stage B and supersede the legacy rows.
 
 ## 7. Known weaknesses
 1. Requirement extraction and MUST/NICE classification are LLM judgment; two agents can split items differently. Mitigation: atomic rule, 10-item MUST cap, QA spot-checks; residual noise maybe +-5.
-2. Equal weighting of musts: "Salesforce at the centre" counts the same as "cross-functional communication". A core-system multiplier (x2) is a candidate fix for QA to judge.
-3. Grade 0.5 is wide (HubSpot vs Salesforce admin, 3 vs 5 years are not the same distance).
+2. Equal weighting of musts: the system "at the centre" counts the same as "cross-functional communication". A core-system multiplier (x2) is a candidate fix for QA to judge.
+3. Grade 0.5 is wide (an adjacent tool vs administering the named system, and 3 vs 5 years, are not the same distance).
 4. Evidence is only as good as the KB: many dossier lines are unverified (capped at 0.5) and confirmed facts live in the operator brief, not yet as `candidate_facts` rows with ids, so citations today are partly to prose.
-5. Pay target for Bilal is fuzzy ("a little above market", no floor); P3 uses recent asks ($135-205K) which vary by role.
+5. A pay target that is not written in targeting.md is non-deterministic. P3 must use the recorded lane ask, not a remembered range.
 6. Freshness penalises jobs with unknown dates only mildly; scraped aggregator dates (jobs.ca, jobera) can be repost dates.
 7. Stage A and Stage B can disagree; only B should drive filing once the posting is read, which costs a fetch per job.
 8. Score measures fit, not odds: cooldowns (Ashby 7-day), referral, applicant volume are outside it by design.
