@@ -11,9 +11,9 @@ title line, bullet, an "Earlier & parallel" line, and education bullets. Indices
 
 spec.json:
 {
-  "name": ["JANE DOE", ",  BDS"],              # runs: name, post-nominal (optional)
+  "name": ["JANE DOE"],                          # runs: name, then an optional post-nominal
   "headline": "POSTING TITLE  ·  DIFFERENTIATOR",
-  "contact_prefix": "Toronto, ON   ·   +1 (416) 555-0123   ·   ",   # email/LinkedIn hyperlinks are kept from the template
+  "contact_prefix": "City, REGION   ·   +1 (555) 555-0100   ·   ",   # email/LinkedIn hyperlinks are kept from the template
   "contact_links": ["name@example.com", "linkedin.com/in/x"],       # optional: replace hyperlink texts
   "profile": "...", "skills": "...",
   "roles": [{"employer": "...", "location": "descriptor, City, Country", "dates": "2022 – Mar 2026",

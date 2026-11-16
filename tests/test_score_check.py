@@ -5,7 +5,7 @@ from score_check import compute
 
 def base(**kw):
     d = {"rubric_version": "fit-v1.0", "stage": "B", "posting_fetched": True,
-         "requirements": [{"req": "SQL", "class": "must", "grade": 1, "source": "bilal-syed/outbox/_master/build.py:27"},
+         "requirements": [{"req": "SQL", "class": "must", "grade": 1, "source": "candidates/example/outbox/_master/build.py:27"},
                           {"req": "Salesforce admin", "class": "must", "grade": 0, "source": None, "core": True},
                           {"req": "Clay", "class": "nice", "grade": 1, "source": "fact:2"}],
          "p1": 12, "p2": 8, "p3": 8, "p4": 7, "p5": 5, "knockout_code": None}

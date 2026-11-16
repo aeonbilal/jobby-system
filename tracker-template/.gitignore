@@ -1,0 +1,13 @@
+# This repository holds applicant PII. Keep it private.
+# SQLite database, sidecars, backups, and exports
+db/*.sqlite*
+db/backups/
+db/exports/
+
+# Secrets and lock temps
+.env
+.env.*
+!.env.example
+db/.migrate.lock
+**/.lock
+*.lock

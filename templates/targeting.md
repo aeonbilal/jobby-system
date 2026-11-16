@@ -14,6 +14,11 @@
 - In:
 - Out:
 
+## Target jurisdiction
+<!-- Default profile is Canada, with Ontario spelling and posting norms (RESUME-STANDARD). Change this when the search is elsewhere. Pay-law checks follow the job's location. -->
+- Jurisdiction: Canada
+- Region notes: Ontario norms unless a lane says otherwise
+
 ## Locations & remote
 <!-- Cities/countries + remote stance (remote-only / hybrid ok / onsite ok). Region matters for boards: list region-relevant job boards here if any. -->
 

@@ -15,9 +15,9 @@ One line per standard: where the rule lives, how it is enforced. If a rule is no
 | Opportunity file | `templates/opportunity.md` | `tools/pipeline_check.py` | 2026-10-22 |
 | Application ops (forms, salary fields, answers, routines) | `templates/APPLICATION-OPS.md` | DB answer log | 2026-10-28 |
 | Application tracker | track skill §0-0.1, `_ledger.md` tracker v2 | `jobby_db.py verify` | 2026-10-23 |
-| Database | candidates `db/DESIGN.md`, `db/migrations/` | `db/tests/`, `jobby_db.py verify` | 2026-10-28 |
-| Turso mirror + multi-agent contract | candidates `db/DESIGN.md` §17, `db/sync_turso.py` | `sync_turso.py verify`, `db/tests/` | 2026-10-28 |
+| Database | `tracker-template/db/DESIGN.md`, `tracker-template/db/migrations/` (live copy: `candidates/db/`) | `tracker-template/db/tests/`, `jobby_db.py verify` | 2026-10-28 |
+| Turso mirror + multi-agent contract | `tracker-template/db/DESIGN.md` §17, `tracker-template/db/sync_turso.py` | `sync_turso.py verify`, `tracker-template/db/tests/` | 2026-10-28 |
 | Candidate-specific rules | `candidates/<slug>/dossier.md` "Document rules", `targeting.md` | judge pass | per candidate |
 | Commits | README "Commit and pull discipline": one logical change per commit, `area: what` messages; candidate packs `apply:`/`tailor:`; never commit `.env`, tokens or `*.sqlite` | `jobby_db.py check-git` | 2026-10-23 |
 
-Tests: `for t in tests/test_*.py; do python3 $t; done` (system) and `python3 -m unittest discover -s candidates/db/tests` (DB).
+Tests: `python3 -m pytest tests/` (engine) and `JOBBY_SYSTEM=$PWD python3 -m unittest discover -s tracker-template/db/tests` (database template). After `./candidates` exists, the same database tests can run from `candidates/db/tests`.

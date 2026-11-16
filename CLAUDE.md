@@ -1,6 +1,6 @@
 # Job Application System — Constitution
 
-This repo runs job searches for candidates (friends & family first) as a Claude-Code-native agentic system. No application code yet, on purpose: the workflow proves itself manually here, and only boring, stable steps get codified later. Sister system: `~/Projects/cogency-outbound` — the codified endpoint of this same evolution; when in doubt, borrow its patterns.
+This repo runs job searches for candidates (friends and family first) as an agentic system. No application code yet, on purpose: the workflow proves itself manually here, and only boring, stable steps get codified later. When a step is stable, codify it in a separate codebase; borrow patterns from there. Do not bake a personal path into this file.
 
 This file is one page on purpose. Read it fully; it overrides habit.
 
@@ -31,7 +31,7 @@ Adding a verb requires retiring or merging one.
 2. **Never fabricate.** Every CV/letter claim traces to dossier evidence. Tailoring = selection, emphasis, framing. Grounding and taste live in the judge pass, never in regex; deterministic checks are form and state only.
 3. **Threshold over quota.** Apply to everything at/above the fit threshold, nothing below it. Volume is an output of match supply, not a target. No padding, no spraying.
 4. **Dedup before spend.** Check `_ledger.md` and `pipeline/` before research or tailoring. Never re-apply to the same company+role as a fresh application. **Channel escalation is different and allowed:** on a silent `applied` opportunity, track proposes a second channel (portal, LinkedIn) at the 14-day mark, the operator approves, and every touch gets its own ledger line. Hard cap: 3 touches per opportunity, each on a distinct channel.
-5. **PII never enters this repo.** `candidates/` is gitignored here and lives in the separate private repo `jobby-candidates`, checked out as `candidates/`. This repo versions the system; that one versions the people.
+5. **PII never enters this repo.** `candidates/` is gitignored here and lives in your private candidates repo, checked out as `candidates/`. This repo versions the system; that one versions the people. Start it from `tracker-template/`.
 6. **One candidate, one directory.** No cross-candidate artifacts; the seatbelt checks for wrong-name/wrong-company leakage before anything ships.
 7. **Confidentiality is absolute.** `targeting.md` exclusions (current employer, referees' networks) are never overridden.
 8. **Sourcing stays legit.** ATS public endpoints, aggregator APIs, Apify managed actors, Firecrawl search. No DIY scraping behind logins.
@@ -48,7 +48,7 @@ A verb graduates to a scheduled agent only after running manually, unchanged and
 
 ## Codification rule
 
-This repo is the spec-by-doing. A verb gets rewritten in code (like cogency-outbound) only after its manual loop is stable and a DECISIONS.md paragraph says why code beats prompts for it.
+This repo is the spec-by-doing. A verb gets rewritten in code only after its manual loop is stable and a DECISIONS.md paragraph says why code beats prompts for it.
 
 ## Data layout
 
@@ -60,7 +60,7 @@ candidates/<slug>/          # gitignored — one per person
   pipeline/                 # one file per opportunity (statuses: discovered → approved → ready → applied → replied → interviewing → offer | closed-*)
   outbox/<slug>/            # CVs, letters, answers.md packs, research.md (§14)
   _ledger.md                # canonical seen + applied ledger (dedup + application tracker source of truth; ## Applied uses the 11-field tracker v2 line, see track skill §0)
-candidates/db/              # jobby.sqlite (gitignored) = structured system of record: jobs, sightings, fit scores, applications, answers, facts; jobby_db.py CLI, migrations/, DESIGN.md; mirrored to Turso by sync_turso.py (credentials outside the repo)
+candidates/db/              # live DB in the private tracker (gitignored here). Tooling template: tracker-template/db/ (jobby_db.py, migrations/, DESIGN.md, sync_turso.py). jobby.sqlite is gitignored inside the tracker. Optional Turso mirror; credentials outside both repos.
 templates/                  # dossier, targeting, opportunity, research blanks, RESUME-STANDARD.md, FIT-RUBRIC.md (fit-v1.0 scoring), APPLICATION-OPS.md (forms, answers, logging, routines)
 tools/                      # resume_qa.py (seatbelt), build_cv_from_template.py (house-style build), research_check.py (research.md lint), pipeline_check.py (research tier and approval dates), build_docs.py (CV + letter builds from spec.json), score_check.py (fit-v1.0 score lint + arithmetic)
 research/                   # evidence behind RESUME-STANDARD and FIT-RUBRIC (no PII)

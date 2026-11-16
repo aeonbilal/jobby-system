@@ -41,7 +41,7 @@ Reviewer 2, 2026-10-20 (America/Toronto). I did my independent research first (s
 - §3.3 City, Province · phone · email · LinkedIn; no street address. (Keep it, but re-cite as convention.)
 - §3.5 short profile with the target title and top requirements. *(Ladders: a summary at the top; LLM screeners weight the summary heavily, per Xu et al. 2025.)*
 - §3.7 surface Canadian/North American experience early. *(Oreopoulos: the largest controllable lever.)*
-- §3.8 Canadian equivalency (WES/ICAS/NDEB) where it exists.
+- §3.8 Equivalency (WES/ICAS or the profession's licensing body) where it exists.
 - §4 action-verb + result bullets, **bounded by never-fabricate** and the rule to log missing metrics as intake questions. This is exactly right.
 - §5.1–5.4 verbatim must-haves in context, acronym plus full form, no stuffing or hidden text, a pdftotext round-trip parse test.
 - §6 text-based PDF by default, DOCX for legacy ATS; candidate-named file; PDF metadata.
@@ -58,7 +58,7 @@ Reviewer 2, 2026-10-20 (America/Toronto). I did my independent research first (s
    - Name PR or citizenship **only** when the posting explicitly requires it (e.g., federal security clearance, some government or regulated roles).
    - *Why:* OHRC treats PR/immigration status as a prohibited employer question at application stage (the employer may ask only "legally entitled?"). Oreopoulos and Banerjee et al. show foreign-origin cues lower callbacks in the GTA, so volunteering immigration status adds a cue without adding information. Eligibility is the employer's real concern, and the eligibility line answers it.
 2. **§5.5 "Gaps over 6 months get an honest one-line entry (study, caregiving, immigration/settlement, licensing exams)" → soften and reorder.**
-   - (a) **Prefer real, dated activity entries** that actually fill the date range, e.g., `Canadian dental licensing (NDEB) — exam preparation, 2024–2025`, a course, Canadian volunteering, or contract work. ATS gap filters work on *dates*, so a prose explanation doesn't defeat them; a dated entry does.
+   - (a) **Prefer real, dated activity entries** that actually fill the date range, e.g., `Professional licensing exam preparation, 2024–2025`, a course, local volunteering, or contract work. ATS gap filters work on *dates*, so a prose explanation doesn't defeat them; a dated entry does.
    - (b) Make a bare explanation label **optional, the candidate's choice**. The BIT/UK GEO field trial (*Nature Human Behaviour* 2022) found explaining a career break **did not improve callbacks**. Eriksson & Rooth (*AER* 2014) found *past* gaps are not penalized once followed by work.
    - (c) Drop "immigration/settlement" as a suggested label; it is another foreign-origin cue. Prefer neutral, activity-based wording.
    - (d) Treat a **current** gap as the real risk (Kroft et al. 2013; Eriksson & Rooth 2014). Flag candidates who are currently unemployed for over 6 months so intake can find a real current activity to list.

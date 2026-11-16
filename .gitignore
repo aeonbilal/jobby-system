@@ -1,5 +1,6 @@
-# PII never enters this repo: candidates/ is its own private repo, cloned into ./candidates
-candidates/
+# PII never enters this repo. ./candidates is your own private tracker
+# (a directory or a symlink). The engine ships tracker-template/ instead.
+/candidates
 
 # scratch, scrape caches, agent worktrees
 tmp/
